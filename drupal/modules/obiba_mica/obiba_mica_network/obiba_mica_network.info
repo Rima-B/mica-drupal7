@@ -7,7 +7,7 @@ dependencies[] = obiba_mica_model
 dependencies[] = obiba_mica_study
 
 
-; Information added by obiba.org packaging script on Fri, 01 May 2015 14:12:37 -0400
+; Information added by obiba.org packaging script on Fri, 01 May 2015 14:15:25 -0400
 version = 7.34-1.0.1
 project = obiba_mica_network
-datestamp = 1430503957
+datestamp = 1430504125
