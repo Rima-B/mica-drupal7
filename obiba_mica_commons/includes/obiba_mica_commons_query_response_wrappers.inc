@@ -1,8 +1,8 @@
 <?php
-
-/*
- * @file code to implement response server wrapper
- * */
+/**
+ * @file
+ * Code to implement response server wrapper.
+ */
 
 abstract class AbstractResponseWrapper {
   const STUDY_RESULT_EXTENSION_ID = 'obiba.mica.StudyResultDto.result';
@@ -13,25 +13,55 @@ abstract class AbstractResponseWrapper {
   protected $dto = NULL;
   protected $documentDto = NULL;
 
-  protected function __construct($joinQueryResponseDto) {
-    $this->dto = $joinQueryResponseDto;
+  /**
+   * Instance initialisation.
+   *
+   * @param object $join_query_response_dto
+   *   The response dto.
+   */
+  protected function __construct($join_query_response_dto) {
+    $this->dto = $join_query_response_dto;
   }
 
-  function isEmpty() {
+  /**
+   * Document is empty.
+   *
+   * @return bool
+   *   False/The document Dto.
+   */
+  public function isEmpty() {
     return empty($this->documentDto);
   }
 
-  function getTotalHits() {
+  /**
+   * Get the total response hits.
+   *
+   * @return int
+   *   The total hits.
+   */
+  public function getTotalHits() {
     return empty($this->documentDto) ? 0 : $this->documentDto->totalHits;
   }
 
-  function getTotalCount() {
+  /**
+   * Get the total count.
+   *
+   * @return int
+   *   The total count.
+   */
+  public function getTotalCount() {
     return empty($this->documentDto) ? 0 : $this->documentDto->totalCount;
   }
 
-  abstract function hasSummaries();
+  /**
+   * Abstraction has summaries method.
+   */
+  public abstract function hasSummaries();
 
-  abstract function getSummaries();
+  /**
+   * Abstraction get summaries method.
+   */
+  public abstract function getSummaries();
 }
 
 class JoinQueryResponseWrapper {
@@ -42,59 +72,110 @@ class JoinQueryResponseWrapper {
 
   private $dto = NULL;
 
-  function __construct($joinQueryResponseDto) {
-    $this->dto = $joinQueryResponseDto;
+  /**
+   * Instance initialisation.
+   *
+   * @param object $join_query_response_dto
+   *   The response dto.
+   */
+  public function __construct($join_query_response_dto) {
+    $this->dto = $join_query_response_dto;
   }
 
-  function getResponseDto() {
+  /**
+   * Get response Dto.
+   *
+   * @return object
+   *   The current response Dto object.
+   */
+  public function getResponseDto() {
     return $this->dto;
   }
 
-  function getCountStats() {
+  /**
+   * GEt count state.
+   *
+   * @return array
+   *   An array count stats.
+   */
+  public function getCountStats() {
     return array(
       'study_total_hits' => empty($this->dto->studyResultDto) ? 0 : $this->dto->studyResultDto->totalHits,
       'study_total_count' => empty($this->dto->studyResultDto) ? 0 : $this->dto->studyResultDto->totalCount,
       'variable_total_hits' => empty($this->dto->variableResultDto) ? 0 : $this->dto->variableResultDto->totalHits,
       'variable_total_count' => empty($this->dto->variableResultDto) ? 0 : $this->dto->variableResultDto->totalCount,
-      'network_total_hits' => !empty($this->dto->networkResultDto->totalHits) ?
-          $this->dto->networkResultDto->totalHits : 0,
-      'network_total_count' => !empty($this->dto->networkResultDto->totalCount) ?
-          $this->dto->networkResultDto->totalCount : 0,
-      'dataset_total_hits' => !empty($this->dto->datasetResultDto->totalHits) ?
-          $this->dto->datasetResultDto->totalHits : 0,
-      'dataset_total_count' => !empty($this->dto->datasetResultDto->totalCount) ?
-          $this->dto->datasetResultDto->totalCount : 0
+      'network_total_hits' => !empty($this->dto->networkResultDto->totalHits) ? $this->dto->networkResultDto->totalHits : 0,
+      'network_total_count' => !empty($this->dto->networkResultDto->totalCount) ? $this->dto->networkResultDto->totalCount : 0,
+      'dataset_total_hits' => !empty($this->dto->datasetResultDto->totalHits) ? $this->dto->datasetResultDto->totalHits : 0,
+      'dataset_total_count' => !empty($this->dto->datasetResultDto->totalCount) ? $this->dto->datasetResultDto->totalCount : 0,
     );
   }
 
-  function getResponseWrapper($type) {
+  /**
+   * Get response wrapper by type.
+   *
+   * @param string $type
+   *   The type of the wrapper.
+   *
+   * @return object
+   *   The result wrapper by type.
+   */
+  public function getResponseWrapper($type) {
     switch ($type) {
       case JoinQueryResponseWrapper::VARIABLES:
         return $this->getVariableResponseWrapper();
+
       case JoinQueryResponseWrapper::DATASETS:
         return $this->getDatasetResponseWrapper();
+
       case JoinQueryResponseWrapper::STUDIES:
         return $this->getStudyResponseWrapper();
+
       case JoinQueryResponseWrapper::NETWORKS:
         return $this->getNetworkResponseWrapper();
+
     }
 
     throw new InvalidArgumentException("Invalid wrapper type: $type");
   }
 
-  function getVariableResponseWrapper() {
+  /**
+   * Get variable response wrapper.
+   *
+   * @return \VariableJoinResponseWrapper
+   *   Variable response wrapper.
+   */
+  public function getVariableResponseWrapper() {
     return new VariableJoinResponseWrapper($this->dto);
   }
 
-  function getDatasetResponseWrapper() {
+  /**
+   * Get dataset response wrapper.
+   *
+   * @return \DatasetJoinResponseWrapper
+   *   Dataset response wrapper.
+   */
+  public function getDatasetResponseWrapper() {
     return new DatasetJoinResponseWrapper($this->dto);
   }
 
-  function getStudyResponseWrapper() {
+  /**
+   * Get study response wrapper.
+   *
+   * @return \StudyJoinResponseWrapper
+   *   Study response wrapper.
+   */
+  public function getStudyResponseWrapper() {
     return new StudyJoinResponseWrapper($this->dto);
   }
 
-  function getNetworkResponseWrapper() {
+  /**
+   * Get network response wrapper.
+   *
+   * @return \NetworkJoinResponseWrapper
+   *   Network response wrapper.
+   */
+  public function getNetworkResponseWrapper() {
     return new NetworkJoinResponseWrapper($this->dto);
   }
 }
@@ -103,25 +184,52 @@ class StudyJoinResponseWrapper extends AbstractResponseWrapper {
 
   private $studyToNetwork = array();
 
-  function __construct($joinQueryResponseDto) {
-    parent::__construct($joinQueryResponseDto);
+  /**
+   * Instance initialisation.
+   *
+   * @param object $join_query_response_dto
+   *   The response dto.
+   */
+  public function __construct($join_query_response_dto) {
+    parent::__construct($join_query_response_dto);
     if (!empty($this->dto) && !empty($this->dto->studyResultDto)) {
       $this->documentDto = $this->dto->studyResultDto;
       $this->networks = $this->mapNetworkDigests();
     }
   }
 
-  function hasSummaries() {
+  /**
+   * Check this Dto response has summaries.
+   *
+   * @return bool
+   *   False/TRUE statement.
+   */
+  public function hasSummaries() {
     return !empty($this->documentDto)
-    && !empty($this->documentDto->{self::STUDY_RESULT_EXTENSION_ID}) //
+    && !empty($this->documentDto->{self::STUDY_RESULT_EXTENSION_ID})
     && !empty($this->documentDto->{self::STUDY_RESULT_EXTENSION_ID}->summaries);
   }
 
-  function getSummaries() {
+  /**
+   * Get summaries.
+   *
+   * @return array
+   *   Summaries server response.
+   */
+  public function getSummaries() {
     return $this->hasSummaries() ? $this->documentDto->{self::STUDY_RESULT_EXTENSION_ID}->summaries : array();
   }
 
-  function getNetworkDigests($study_id) {
+  /**
+   * Get network digests by study id.
+   *
+   * @param string $study_id
+   *   Study id.
+   *
+   * @return array
+   *   A networks array.
+   */
+  public function getNetworkDigests($study_id) {
     $networks = array();
     if (!empty($this->studyToNetwork[$study_id])) {
       $networks = $this->studyToNetwork[$study_id];
@@ -129,6 +237,9 @@ class StudyJoinResponseWrapper extends AbstractResponseWrapper {
     return empty($networks) ? array() : $networks;
   }
 
+  /**
+   * Map the network digest.
+   */
   private function mapNetworkDigests() {
     if (!$this->hasSummaries()) {
       return;
@@ -143,13 +254,22 @@ class StudyJoinResponseWrapper extends AbstractResponseWrapper {
     }
   }
 
+  /**
+   * Map the network by study id.
+   *
+   * @param string $study_id
+   *   The study id.
+   *
+   * @return array
+   *   Filtered network array.
+   */
   private function mapNetwork($study_id) {
-    $networkDtoWrapper = new NetworkJoinResponseWrapper($this->dto);
-    if (!$networkDtoWrapper->isEmpty() && $networkDtoWrapper->hasDigsts()) {
-      return array_filter($networkDtoWrapper->getDigests(), //
+    $network_dto_wrapper = new NetworkJoinResponseWrapper($this->dto);
+    if (!$network_dto_wrapper->isEmpty() && $network_dto_wrapper->hasDigsts()) {
+      return array_filter($network_dto_wrapper->getDigests(),
         function ($network) use ($study_id) {
-          $studies = $network->{'obiba.mica.NetworkDigestDto.studies'};
-          return !empty($studies) && !empty($studies->ids) && in_array($study_id, $studies->ids);
+        $studies = $network->{'obiba.mica.NetworkDigestDto.studies'};
+        return !empty($studies) && !empty($studies->ids) && in_array($study_id, $studies->ids);
         }
       );
     }
@@ -161,60 +281,120 @@ class StudyJoinResponseWrapper extends AbstractResponseWrapper {
 
 class NetworkJoinResponseWrapper extends AbstractResponseWrapper {
 
-  function __construct($joinQueryResponseDto) {
-    parent::__construct($joinQueryResponseDto);
+  /**
+   * Instance initialisation.
+   *
+   * @param object $join_query_response_dto
+   *   The response dto.
+   */
+  public function __construct($join_query_response_dto) {
+    parent::__construct($join_query_response_dto);
     if (!empty($this->dto) && !empty($this->dto->networkResultDto)) {
       $this->documentDto = $this->dto->networkResultDto;
     }
   }
 
-  function hasDigsts() {
-    return !empty($this->documentDto) //
-    && !empty($this->documentDto->{self::NETWORK_RESULT_EXTENSION_ID}) //
+  /**
+   * Has digests.
+   *
+   * @return bool
+   *   FALSE/TRUE statement.
+   */
+  public function hasDigsts() {
+    return !empty($this->documentDto)
+    && !empty($this->documentDto->{self::NETWORK_RESULT_EXTENSION_ID})
     && !empty($this->documentDto->{self::NETWORK_RESULT_EXTENSION_ID}->digests);
   }
 
-  function getDigests() {
+  /**
+   * GEt digest.
+   *
+   * @return array
+   *   The document digest.
+   */
+  public function getDigests() {
     return $this->hasDigsts() ? $this->documentDto->{self::NETWORK_RESULT_EXTENSION_ID}->digests : array();
   }
 
-  function hasSummaries() {
-    return !empty($this->documentDto) //
-    && !empty($this->documentDto->{self::NETWORK_RESULT_EXTENSION_ID}) //
+  /**
+   * Check this Dto response has summaries.
+   *
+   * @return bool
+   *   False/TRUE statement.
+   */
+  public function hasSummaries() {
+    return !empty($this->documentDto)
+    && !empty($this->documentDto->{self::NETWORK_RESULT_EXTENSION_ID})
     && !empty($this->documentDto->{self::NETWORK_RESULT_EXTENSION_ID}->networks);
   }
 
-  function getSummaries() {
+  /**
+   * Get summaries.
+   *
+   * @return array
+   *   Summaries server response.
+   */
+  public function getSummaries() {
     return $this->hasSummaries() ? $this->documentDto->{self::NETWORK_RESULT_EXTENSION_ID}->networks : array();
   }
 }
 
 class VariableJoinResponseWrapper extends AbstractResponseWrapper {
 
-  function __construct($joinQueryResponseDto) {
-    parent::__construct($joinQueryResponseDto);
+  /**
+   * Instance initialisation.
+   *
+   * @param object $join_query_response_dto
+   *   The response dto.
+   */
+  public function __construct($join_query_response_dto) {
+    parent::__construct($join_query_response_dto);
     if (!empty($this->dto) && !empty($this->dto->variableResultDto)) {
       $this->documentDto = $this->dto->variableResultDto;
     }
   }
 
-  function hasDetails() {
-    return !empty($this->documentDto) //
-    && !empty($this->documentDto->{self::VARIABLE_RESULT_EXTENSION_ID}) //
+  /**
+   * Check this Dto response has details.
+   *
+   * @return bool
+   *   False/TRUE statement.
+   */
+  public function hasDetails() {
+    return !empty($this->documentDto)
+    && !empty($this->documentDto->{self::VARIABLE_RESULT_EXTENSION_ID})
     && !empty($this->documentDto->{self::VARIABLE_RESULT_EXTENSION_ID}->variables);
   }
 
-  function getDetails() {
+  /**
+   * Get details.
+   *
+   * @return array
+   *   details document server response.
+   */
+  public function getDetails() {
     return $this->hasDetails() ? $this->documentDto->{self::VARIABLE_RESULT_EXTENSION_ID}->variables : array();
   }
 
-  function hasSummaries() {
-    return !empty($this->documentDto) //
-    && !empty($this->documentDto->{self::VARIABLE_RESULT_EXTENSION_ID}) //
+  /**
+   * Check this Dto response has summaries.
+   *
+   * @return bool
+   *   False/TRUE statement.
+   */
+  public function hasSummaries() {
+    return !empty($this->documentDto)
+    && !empty($this->documentDto->{self::VARIABLE_RESULT_EXTENSION_ID})
     && !empty($this->documentDto->{self::VARIABLE_RESULT_EXTENSION_ID}->summaries);
   }
 
-  function getSummaries() {
+  /**
+   * Get summaries.
+   *
+   * @return array
+   *   Summaries server response.
+   */
+  public function getSummaries() {
     return $this->hasSummaries() ? $this->documentDto->{self::VARIABLE_RESULT_EXTENSION_ID}->summaries : array();
   }
 
@@ -222,20 +402,38 @@ class VariableJoinResponseWrapper extends AbstractResponseWrapper {
 
 class DatasetJoinResponseWrapper extends AbstractResponseWrapper {
 
-  function __construct($joinQueryResponseDto) {
-    parent::__construct($joinQueryResponseDto);
+  /**
+   * Instance initialisation.
+   *
+   * @param object $join_query_response_dto
+   *   The response dto.
+   */
+  public function __construct($join_query_response_dto) {
+    parent::__construct($join_query_response_dto);
     if (!empty($this->dto) && !empty($this->dto->datasetResultDto)) {
       $this->documentDto = $this->dto->datasetResultDto;
     }
   }
 
-  function hasSummaries() {
-    return !empty($this->documentDto) //
-    && !empty($this->documentDto->{self::DATASET_RESULT_EXTENSION_ID}) //
+  /**
+   * Check this Dto response has summaries.
+   *
+   * @return bool
+   *   False/TRUE statement.
+   */
+  public function hasSummaries() {
+    return !empty($this->documentDto)
+    && !empty($this->documentDto->{self::DATASET_RESULT_EXTENSION_ID})
     && !empty($this->documentDto->{self::DATASET_RESULT_EXTENSION_ID}->datasets);
   }
 
-  function getSummaries() {
+  /**
+   * Get summaries.
+   *
+   * @return array
+   *   Summaries server response.
+   */
+  public function getSummaries() {
     return $this->hasSummaries() ? $this->documentDto->{self::DATASET_RESULT_EXTENSION_ID}->datasets : array();
   }
 

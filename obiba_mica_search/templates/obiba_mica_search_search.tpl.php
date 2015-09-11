@@ -91,7 +91,7 @@ if (!empty($search_param)) {
                     <div class="col-md-5"><?php print render($variable_search_form) ?> </div>
                     <div class="col-md-4 pull-right">
                       <?php
-                      print MicaClientAnchorHelper::ajax_friendly_anchor(
+                      print MicaClientAnchorHelper::ajaxFriendlyAnchor(
                         MicaClientPathProvider::COVERAGE,
                         t(variable_get_value('variable_coverage_label')),
                         array('class' => 'btn btn-primary indent'),
@@ -130,7 +130,7 @@ if (!empty($search_param)) {
                 <div class="col-md-5 "><?php print render($dataset_search_form) ?> </div>
                 <div class="col-md-4 pull-right"><?php
                   if (variable_get_value('mica_statistics_coverage')) {
-                    print MicaClientAnchorHelper::ajax_friendly_anchor(
+                    print MicaClientAnchorHelper::ajaxFriendlyAnchor(
                       MicaClientPathProvider::COVERAGE,
                       t(variable_get_value('variable_coverage_label')),
                       array('class' => 'btn btn-primary indent'),
@@ -162,7 +162,7 @@ if (!empty($search_param)) {
                 <div class="col-md-5 "><?php print render($study_search_form) ?> </div>
                 <div class="col-md-4 pull-right"><?php
                   if (variable_get_value('mica_statistics_coverage')) {
-                    print MicaClientAnchorHelper::ajax_friendly_anchor(
+                    print MicaClientAnchorHelper::ajaxFriendlyAnchor(
                       MicaClientPathProvider::COVERAGE,
                       t(variable_get_value('variable_coverage_label')),
                       array('class' => 'btn btn-primary indent'),
@@ -193,7 +193,7 @@ if (!empty($search_param)) {
                 <div class="col-md-5 "><?php print render($network_search_form) ?> </div>
                 <div class="col-md-4 pull-right"><?php
                   if (variable_get_value('mica_statistics_coverage')) {
-                    print MicaClientAnchorHelper::ajax_friendly_anchor(
+                    print MicaClientAnchorHelper::ajaxFriendlyAnchor(
                       MicaClientPathProvider::COVERAGE,
                       t(variable_get_value('variable_coverage_label')),
                       array('class' => 'btn btn-primary indent'),

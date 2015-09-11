@@ -1,8 +1,8 @@
 <?php
-/*
- * @file drush commands  implementations
- *    to help users download required libraries
- * */
+/**
+ * @file
+ * drush commands  implementations to help users download required libraries.
+ */
 
 /**
  * Implements hook_drush_command().
@@ -52,7 +52,7 @@ function obiba_mica_drush_command() {
 }
 
 /**
- * Downloads
+ * Implementation of command to download HighCharts library.
  */
 function obiba_mica_drush_highcharts_download() {
   $args = func_get_args();
@@ -60,7 +60,6 @@ function obiba_mica_drush_highcharts_download() {
     $path = $args[0];
   }
   else {
-    // $path = drush_get_context('DRUSH_DRUPAL_ROOT') . '/sites/all/libraries';
     $path = drush_get_context('DRUSH_DRUPAL_ROOT');
   }
   // Create the path if it does not exist.
@@ -99,13 +98,15 @@ function obiba_mica_drush_highcharts_download() {
 
 }
 
+/**
+ * Implementation of command to download dataTable library.
+ */
 function obiba_mica_drush_datatable_download() {
   $args = func_get_args();
   if ($args[0]) {
     $path = $args[0];
   }
   else {
-    // $path = drush_get_context('DRUSH_DRUPAL_ROOT') . '/sites/all/libraries';
     $path = drush_get_context('DRUSH_DRUPAL_ROOT');
   }
 
@@ -142,13 +143,15 @@ function obiba_mica_drush_datatable_download() {
   }
 }
 
+/**
+ * Implementation of command to download DataTable Bootstrap Plugin library.
+ */
 function obiba_mica_drush_datatable_bootstrap_plugins_download() {
   $args = func_get_args();
   if ($args[0]) {
     $path = $args[0];
   }
   else {
-    // $path = drush_get_context('DRUSH_DRUPAL_ROOT') . '/sites/all/libraries';
     $path = drush_get_context('DRUSH_DRUPAL_ROOT');
   }
 
@@ -192,13 +195,15 @@ function obiba_mica_drush_datatable_bootstrap_plugins_download() {
   }
 }
 
+/**
+ * Implementation of command to download Obiba Progress bar library.
+ */
 function obiba_mica_drush_obiba_progressbar() {
   $args = func_get_args();
   if ($args[1]) {
     $path = $args[1];
   }
   else {
-    // $path = drush_get_context('DRUSH_DRUPAL_ROOT') . '/sites/all/libraries';
     $path = drush_get_context('DRUSH_DRUPAL_ROOT');
   }
 
@@ -206,9 +211,9 @@ function obiba_mica_drush_obiba_progressbar() {
     $version_progress_bar = $args[0];
   }
   else {
-    $version_progress_bar = '1.0.0';
+    $version_progress_bar = variable_get('obiba-progressbar-lib-version', '1.0.0');
   }
-  print_r($args);
+
   // Create the libraries path if it does not exist.
   if (!is_dir($path . '/sites/all/libraries')) {
     drush_op('mkdir', $path . '/sites/all/libraries');
@@ -241,4 +246,3 @@ function obiba_mica_drush_obiba_progressbar() {
     }
   }
 }
-

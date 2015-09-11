@@ -8,16 +8,16 @@
 $path_module_protobuf = drupal_get_path('module', 'obiba_protobuf');
 $path_module_protos = drupal_get_path('module', 'obiba_mica_model');
 
-include_once($path_module_protobuf . '/protobuf/Protobuf.php');
+include_once $path_module_protobuf . '/protobuf/Protobuf.php';
 use \DrSlump\Protobuf;
 
 Protobuf::autoload();
 
-include_once($path_module_protos . '/protos/Mica.php');
-include_once($path_module_protos . '/protos/MicaSearch.php');
-include_once("obiba_mica_commons_query_dto_builders.inc");
-include_once("obiba_mica_commons_query_response_wrappers.inc");
-include_once("obiba_mica_commons_resource_paths.inc");
+include_once $path_module_protos . '/protos/Mica.php';
+include_once $path_module_protos . '/protos/MicaSearch.php';
+include_once "obiba_mica_commons_query_dto_builders.inc";
+include_once "obiba_mica_commons_query_response_wrappers.inc";
+include_once "obiba_mica_commons_resource_paths.inc";
 
 
 /**
@@ -32,27 +32,34 @@ class MicaClient {
   const HEADER_BINARY = 'application/x-protobuf';
   const HEADER_JSON = 'application/json';
   const HEADER_CSV = 'text/csv';
+  const HEADER_EXCEL_SHEET = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
   const HEADER_TEXT = 'text/plain';
-  const PAGINATE_studies = 0;
-  const PAGINATE_variables = 1;
-  const PAGINATE_datasets = 2;
-  const PAGINATE_networks = 3;
+  const PAGINATE_STUDIES = 0;
+  const PAGINATE_VARIABLES = 1;
+  const PAGINATE_DATASETS = 2;
+  const PAGINATE_NETWORKS = 3;
 
-  protected $mica_url;
+  protected $micaUrl;
 
   private $lastResponse;
-  private static $response_page_size_small = 10;
-  private static $response_page_size = 20;
+  private static $responsePageSizeSmall = 10;
+  private static $responsePageSize = 20;
 
 
   /**
-   * Mica client from a given url or from the one retrieved from 'mica_url' variable.
-   * @param null $mica_url
+   * Instance initialisation.
+   *
+   * Mica client from a given url or from the one retrieved from 'mica_url'
+   * variable.
+   *
+   * @param string $mica_url
+   *   IF given,  the Mica server url, the  default value is a a setting
+   *   parameter
    */
   public function __construct($mica_url = NULL) {
     $this->micaUrl = (isset($mica_url) ? $mica_url : variable_get_value('mica_url')) . '/ws';
-    self::$response_page_size = variable_get_value('mica_response_page_size');
-    self::$response_page_size_small = variable_get_value('mica_response_page_size_small');
+    self::$responsePageSize = variable_get_value('mica_response_page_size');
+    self::$responsePageSizeSmall = variable_get_value('mica_response_page_size_small');
   }
 
   /**
@@ -64,26 +71,32 @@ class MicaClient {
 
   /**
    * Get the last response (if any).
-   * @return mixed
+   *
+   * @return array
+   *   The response server formatted as an array.
    */
   public function getLastResponse() {
     return $this->lastResponse;
   }
 
   /**
-   * Set the last response after a http call.
-   * @param $lastResponse
+   * Set the last response cookies after a http call.
+   *
+   * @param array $last_response
+   *   The server response.
    */
-  protected function setLastResponse($lastResponse) {
-    $this->lastResponse = $lastResponse;
-    if (isset($lastResponse)) {
+  protected function setLastResponse($last_response) {
+    $this->lastResponse = $last_response;
+    if (isset($last_response)) {
       $this->setLastResponseCookies();
     }
   }
 
   /**
    * Get the last response headers (if any).
+   *
    * @return array
+   *   The header response server.
    */
   public function getLastResponseHeaders() {
     if ($this->lastResponse != NULL) {
@@ -110,21 +123,24 @@ class MicaClient {
     $request = new HttpClientRequest($url, array(
       'method' => HttpClientRequest::METHOD_DELETE,
       'headers' => $this->authorizationHeader(array(
-          'Accept' => array(HEADER_JSON),
-        ))
+        'Accept' => array(HEADER_JSON),
+      )),
     ));
 
     $client = $this->client();
     try {
-      $body = $client->execute($request);
+      $client->execute($request);
       $this->lastResponse = $client->lastResponse;
       $this->setLastResponseCookies();
       unset($_SESSION[self::MICA_COOKIE]);
     }
     catch (HttpClientException $e) {
-      // clear anyway
+      // Clear anyway.
       watchdog('MicaClient', 'Connection to server fail,  Error serve code : @code, message: @message',
-        array('@code' => $e->getCode(), '@message' => $e->getMessage()), WATCHDOG_WARNING);
+        array(
+          '@code' => $e->getCode(),
+          '@message' => $e->getMessage(),
+        ), WATCHDOG_WARNING);
       $this->lastResponse = $client->lastResponse;
       $this->setLastResponseCookies();
       unset($_SESSION[self::MICA_COOKIE]);
@@ -133,8 +149,12 @@ class MicaClient {
 
   /**
    * Get the header value(s) from the last response.
-   * @param $header_name
+   *
+   * @param string $header_name
+   *   The header information to extract.
+   *
    * @return array
+   *   The value of header name.
    */
   protected function getLastResponseHeader($header_name) {
     $headers = $this->getLastResponseHeaders();
@@ -146,7 +166,9 @@ class MicaClient {
   }
 
   /**
-   * Forwards the 'Set-Cookie' directive(s) to the drupal client if the user was authenticated by Agate.
+   * Forwards the 'Set-Cookie' directive(s) to the drupal client.
+   *
+   * If the user was authenticated by Agate.
    */
   private function setLastResponseCookies() {
     foreach ($this->getLastResponseHeader(self::SET_COOKIE_HEADER) as $cookie_str) {
@@ -156,39 +178,67 @@ class MicaClient {
       $value = $cookie[$name];
       watchdog('Mica Client', 'Cookie: name=@name, value=@value',
         array('@name' => $name, '@value' => $value), WATCHDOG_DEBUG);
-      if(empty($value)) {
-        if(!empty($_SESSION[$name])) unset($_SESSION[$name]);
-      } else {
+      if (empty($value)) {
+        if (!empty($_SESSION[$name])) {
+          unset($_SESSION[$name]);
+        }
+      }
+      else {
         $_SESSION[$name] = $value;
       }
     }
   }
 
   /**
-   * Add authorization headers
+   * Add authorization headers.
+   *
    * @param array $headers
+   *   A header array.
+   *
    * @return array
+   *   The transformed initial headers.
    */
   protected function authorizationHeader(array $headers) {
     if (isset($_SESSION[self::OBIBA_COOKIE])) {
-      // authenticate by cookies coming from request (case of regular user logged in via Agate)
+      // Authenticate by cookies coming from request (case of regular user
+      // logged in via Agate).
       watchdog('obiba_mica', 'Auth by cookies from request');
-      $headers = $this->addCookieHeader($headers, $_SESSION[self::OBIBA_COOKIE], isset($_SESSION[self::MICA_COOKIE]) ? $_SESSION[self::MICA_COOKIE] : NULL);
+      $headers = $this->addCookieHeader($headers, $_SESSION[self::OBIBA_COOKIE],
+        isset($_SESSION[self::MICA_COOKIE]) ?
+          $_SESSION[self::MICA_COOKIE] : NULL);
     }
     else {
       watchdog('obiba_mica', 'Auth by anonymous credentials');
 
       if (isset($_SESSION[self::MICA_COOKIE])) {
-        $headers = $this->addCookieHeader($headers, NULL, $_SESSION[self::MICA_COOKIE]);
+        $headers = $this->addCookieHeader($headers, NULL,
+          $_SESSION[self::MICA_COOKIE]);
       }
 
-      $credentials = variable_get_value('mica_anonymous_name') . ':' . variable_get_value('mica_anonymous_password');
-      $headers[self::AUTHORIZATION_HEADER] = array('Basic ' . base64_encode($credentials));
+      $credentials = variable_get_value('mica_anonymous_name') . ':'
+        . variable_get_value('mica_anonymous_password');
+      $headers[self::AUTHORIZATION_HEADER] = array(
+        'Basic '
+        . base64_encode($credentials),
+      );
     }
-
     return $headers;
   }
 
+
+  /**
+   * Add the cookie Id/value to the header.
+   *
+   * @param array $headers
+   *   The server response header.
+   * @param string $obibaid
+   *   The obibaid cookie id.
+   * @param string $micasid
+   *   The micaid cookie id.
+   *
+   * @return array
+   *   The transformed initial headers.
+   */
   private function addCookieHeader(array $headers, $obibaid, $micasid) {
     $cookie = $this->cookieHeaderValue($obibaid, $micasid);
 
@@ -198,16 +248,19 @@ class MicaClient {
     else {
       $headers[self::COOKIE_HEADER] = array($cookie);
     }
-
     return $headers;
   }
 
   /**
    * Add authorization by cookies header.
-   * @param $obibaid
-   * @param $micasid
-   * @internal param array $headers
+   *
+   * @param string $obibaid
+   *   The obibaid cookie id.
+   * @param string $micasid
+   *   The micaid cookie id.
+   *
    * @return string
+   *   The Value of the cooke.
    */
   private function cookieHeaderValue($obibaid, $micasid) {
     $cookie_parts = array();
@@ -225,8 +278,12 @@ class MicaClient {
 
   /**
    * Explode a cookie string in a array.
-   * @param $cookie_str
+   *
+   * @param string $cookie_str
+   *   The cookie string.
+   *
    * @return array
+   *   The cookie array.
    */
   private function parseCookie($cookie_str) {
     $cookie = array();
@@ -238,7 +295,10 @@ class MicaClient {
   }
 
   /**
-   * @return HttpClient
+   * The client object construction overriding the httpClient->client() method.
+   *
+   * @return object
+   *   The overridden object.
    */
   protected function client() {
     $default_headers_setter = function ($request) {
@@ -254,7 +314,7 @@ class MicaClient {
     $client->options['curlopts'] += array(
       CURLOPT_SSL_VERIFYHOST => FALSE,
       CURLOPT_SSL_VERIFYPEER => FALSE,
-      CURLOPT_ENCODING => TRUE
+      CURLOPT_ENCODING => TRUE,
     );
 
     Protobuf::setDefaultCodec(new Protobuf\Codec\Json());
@@ -262,7 +322,16 @@ class MicaClient {
     return $client;
   }
 
-  protected function session_facets_bucket_construction($facets_bucket) {
+  /**
+   * The construction of the session facet buckets.
+   *
+   * @param object $facets_bucket
+   *   An array of facet buckets.
+   *
+   * @return array
+   *   An array of constructed facet bucket to store in session.
+   */
+  protected function sessionFacetsBucketConstruction($facets_bucket) {
     $facets_buckets = array();
     if (!empty($facets_bucket)) {
       foreach ($facets_bucket as $bucket) {
@@ -270,7 +339,7 @@ class MicaClient {
           'title' => obiba_mica_commons_get_localized_field($bucket, 'title'),
           'key' => $bucket->aggregation,
           'aggs' => $bucket->aggregation,
-          'dto' => $bucket
+          'dto' => $bucket,
         );
 
         if (!empty($bucket->children)) {
@@ -280,7 +349,7 @@ class MicaClient {
               'title' => obiba_mica_commons_get_localized_field($child, 'title'),
               'key' => $child->aggregation,
               'aggs' => $child->aggregation,
-              'dto' => $child
+              'dto' => $child,
             ));
           }
 
@@ -289,9 +358,16 @@ class MicaClient {
       }
       return $facets_buckets;
     }
+    return NULL;
   }
 
-  protected function session_facets_builder($aggregations) {
+  /**
+   * Facets session builder.
+   *
+   * @param object $aggregations
+   *   The object aggregation returned by Mica server.
+   */
+  protected function sessionFacetsBuilder($aggregations) {
     $network_buckets = array();
     $study_buckets = array();
     $dataset_buckets = array();
@@ -310,13 +386,13 @@ class MicaClient {
           $network_aggregations = array_filter($aggregation->aggs, function ($agg) {
             return $agg->aggregation === "networkId";
           });
-          $network_buckets = $this->session_facets_bucket_construction($aggregation->aggs);
+          $network_buckets = $this->sessionFacetsBucketConstruction($aggregation->aggs);
         }
       }
 
       if ($type_aggregations == 'datasetResultDto') {
         if (!empty($aggregation->aggs)) {
-          $dataset_buckets = $this->session_facets_bucket_construction($aggregation->aggs);
+          $dataset_buckets = $this->sessionFacetsBucketConstruction($aggregation->aggs);
           $_SESSION['datasets']['aggregations'] = $aggregation->aggs;
         }
         $_SESSION['datasets']['aggregations']['total_hits'] = $aggregation->totalHits;
@@ -325,65 +401,78 @@ class MicaClient {
 
       if ($type_aggregations == 'variableResultDto') {
         if (!empty($aggregation->aggs)) {
-          $filtered = self::filter_variable_aggregations($aggregation->aggs);
-          self::order_facet_taxonomies($filtered, function ($value) {
+          $filtered = self::filterVariableAggregations($aggregation->aggs);
+          self::orderFacetTaxonomies($filtered, function ($value) {
             return empty($value->aggregation) ? $value : $value->aggregation;
           });
-          $variable_buckets = $this->session_facets_bucket_construction($filtered);
+          $variable_buckets = $this->sessionFacetsBucketConstruction($filtered);
         }
         $_SESSION['variables']['studies'] = array();
-        $study_result = isset($aggregations->studyResultDto->{'obiba.mica.StudyResultDto.result'}) ? $aggregations->studyResultDto->{'obiba.mica.StudyResultDto.result'} : NULL;
-        if (!empty($study_result) && (!empty($study_result->summaries) || !empty($study_result->digests))) {
-          $_SESSION['variables']['studies'] = //
-            empty($study_result->summaries) //
-              ? $study_result->digests //
-              : $study_result->summaries;
+        $study_result
+          = isset($aggregations->studyResultDto->{'obiba.mica.StudyResultDto.result'}) ?
+          $aggregations->studyResultDto->{'obiba.mica.StudyResultDto.result'} :
+          NULL;
+
+        if (!empty($study_result) &&
+          (!empty($study_result->summaries) ||
+            !empty($study_result->digests))
+        ) {
+          $_SESSION['variables']['studies']
+            = empty($study_result->summaries) ?
+            $study_result->digests :
+            $study_result->summaries;
         }
 
-        $dataset_result = isset($aggregations->datasetResultDto->{'obiba.mica.DatasetResultDto.result'}) ? $aggregations->datasetResultDto->{'obiba.mica.DatasetResultDto.result'} : NULL;
+        $dataset_result
+          = isset($aggregations->datasetResultDto->{'obiba.mica.DatasetResultDto.result'}) ?
+          $aggregations->datasetResultDto->{'obiba.mica.DatasetResultDto.result'} :
+          NULL;
+
         $_SESSION['variables']['datasets'] = array();
-        if (!empty($dataset_result) && (!empty($dataset_result->datasets) || !empty($dataset_result->digests))) {
-          $_SESSION['variables']['datasets'] =
-            empty($dataset_result->datasets)
-              ? $dataset_result->digests
-              : $dataset_result->datasets;
+        if (!empty($dataset_result) && (!empty($dataset_result->datasets) ||
+            !empty($dataset_result->digests))
+        ) {
+          $_SESSION['variables']['datasets']
+            = empty($dataset_result->datasets) ? $dataset_result->digests : $dataset_result->datasets;
         }
-        $_SESSION['variables']['aggregations'] = !empty($aggregation->aggs) ? $aggregation->aggs : array();
-        $_SESSION['variables']['aggregations']['total_hits'] = $aggregation->totalHits;
-        $_SESSION['variables']['aggregations']['total_count'] = $aggregation->totalCount;
+
+        $_SESSION['variables']['aggregations']
+          = !empty($aggregation->aggs) ? $aggregation->aggs : array();
+        $_SESSION['variables']['aggregations']['total_hits']
+          = $aggregation->totalHits;
+        $_SESSION['variables']['aggregations']['total_count']
+          = $aggregation->totalCount;
       }
       if ($type_aggregations == 'studyResultDto') {
         if (!empty($aggregation->aggs)) {
-          $study_buckets = $this->session_facets_bucket_construction(self::filter_study_aggregations($aggregation->aggs));
+          $study_buckets = $this->sessionFacetsBucketConstruction(self::filterStudyAggregations($aggregation->aggs));
         }
         if (!empty($aggregations->networkResultDto)) {
           $network_result = isset($aggregations->networkResultDto->{'obiba.mica.NetworkResultDto.result'}) ? $aggregations->networkResultDto->{'obiba.mica.NetworkResultDto.result'} : NULL;
           if (!empty($network_result) && (!empty($network_result->networks) || !empty($network_result->digests))) {
             $_SESSION['studies']['networks'] = array();
-            $_SESSION['studies']['networks'] =
-              empty($network_result->digests)
-                ? $network_result->networks
-                : $network_result->digests;
+            $_SESSION['studies']['networks']
+              = empty($network_result->digests) ? $network_result->networks : $network_result->digests;
           }
         }
 
         if (!empty($aggregations->variableResultDto->aggs)) {
-          $variable_studies_id_aggregations =
-            $this->_get_aggregations_by_entity_dto($aggregations->variableResultDto->aggs, 'studyIds');
+          $variable_studies_id_aggregations
+            = $this->getAggregationsByEntityDto($aggregations->variableResultDto->aggs, 'studyIds');
           $_SESSION['studies']['variables'] = !empty($variable_studies_id_aggregations) ?
             $variable_studies_id_aggregations : NULL;
         }
 
         if (!empty($aggregations->networkResultDto->aggs)) {
-          $networks_studies_id_aggregations =
-            $this->_get_aggregations_by_entity_dto($aggregations->networkResultDto->aggs, 'studyIds');
+          $networks_studies_id_aggregations
+            = $this->getAggregationsByEntityDto($aggregations->networkResultDto->aggs, 'studyIds');
           $_SESSION['studies']['networks-studyId'] = !empty($networks_studies_id_aggregations) ?
             $networks_studies_id_aggregations : NULL;
         }
 
         if (!empty($aggregations->datasetResultDto) && !empty($aggregations->datasetResultDto->aggs)) {
-          $datasets_study_tables_study_id_aggregations =
-            $this->_get_aggregations_by_entity_dto($aggregations->datasetResultDto->aggs, 'studyTable-studyId');
+          $datasets_study_tables_study_id_aggregations
+            = $this->getAggregationsByEntityDto($aggregations->datasetResultDto->aggs, 'studyTable-studyId');
           $_SESSION['studies']['studyTable-studyId'] = !empty($datasets_study_tables_study_id_aggregations) ?
             $datasets_study_tables_study_id_aggregations : NULL;
         }
@@ -394,7 +483,7 @@ class MicaClient {
       }
     }
 
-    // move some facets
+    // Move some facets.
     $_SESSION['variables']['facets-buckets'] = array_merge($dataset_buckets, $variable_buckets);
     $moved_facets = array_filter($_SESSION['variables']['facets-buckets'], function ($facet) {
       return $facet['key'] === 'studyIds' || $facet['key'] === 'dceIds';
@@ -403,6 +492,7 @@ class MicaClient {
     foreach ($moved_facets as $key => $facet) {
       unset($_SESSION['variables']['facets-buckets'][$key]);
     }
+
     $network_moved_facets = array_merge($network_buckets, $moved_facets);
     $_SESSION['studies']['facets-buckets'] = array_merge(
       $network_moved_facets,
@@ -415,11 +505,21 @@ class MicaClient {
     }
   }
 
-  protected function _get_aggregations_by_entity_dto($entity_aggr, $aggregations_term) {
+  /**
+   * Get aggregations by entity Dto.
+   *
+   * @param object $entity_aggr
+   *   The entity aggregation.
+   * @param string $aggregations_term
+   *   The aggregation term.
+   *
+   * @return object
+   *   The aggregation term object.
+   */
+  protected function getAggregationsByEntityDto($entity_aggr, $aggregations_term) {
     if (!empty($entity_aggr)) {
       foreach ($entity_aggr as $agg) {
         if ($agg->aggregation == $aggregations_term && !empty($agg->{'obiba.mica.TermsAggregationResultDto.terms'})) {
-
           return $agg->{'obiba.mica.TermsAggregationResultDto.terms'};
         }
       }
@@ -427,85 +527,121 @@ class MicaClient {
     return NULL;
   }
 
+  /**
+   * GEt the setting of the samll page size response (for pagination).
+   *
+   * @return int
+   *   The page size.
+   */
   public static function getResponsePageSizeSmall() {
-    return self::$response_page_size_small;
+    return self::$responsePageSizeSmall;
   }
 
+  /**
+   * GEt the setting of the page size response (for pagination).
+   *
+   * @return int
+   *   The page size.
+   */
   public static function getResponsePageSize() {
-    $size = empty($_GET['size']) ? self::$response_page_size : $_GET['size'];
+    $size = empty($_GET['size']) ? self::$responsePageSize : $_GET['size'];
     return $size;
   }
 
   /**
-   * Removes the flagged aggs from the UI only
-   * @param $aggs
+   * Removes the flagged aggregations from the UI only.
+   *
+   * @param object $aggs
+   *   The aggregations.
+   *
    * @return array
+   *   filtered aggregations.
    */
-  private static function filter_variable_aggregations($aggs) {
+  private static function filterVariableAggregations($aggs) {
     $filters = NULL;
     if (variable_get_value('search_datasets_autocomplete') == ObibaDatasetConstants::FACET_TYPE_HIDE) {
       $filters[] = "datasetId";
     }
-
     if (!variable_get_value('search_studies_dce_autocomplete')) {
       $filters[] = "dceIds";
     }
-
     return empty($filters) ? $aggs : array_filter($aggs, function ($agg) use ($filters) {
       return FALSE === array_search($agg->aggregation, $filters);
     });
   }
 
   /**
-   * Removes the flagged aggs from the UI only
-   * @param $aggs
+   * Removes the flagged aggs from the UI only.
+   *
+   * @param object $aggs
+   *   The aggregations.
+   *
    * @return array
+   *   filtered aggregations.
    */
-  private static function filter_study_aggregations($aggs) {
+  private static function filterStudyAggregations($aggs) {
     $filters = NULL;
     if (!variable_get_value('search_general_population_sources_autocomplete')) {
       $filters[] = "populations-recruitment-generalPopulationSources";
     }
-
     return empty($filters) ? $aggs : array_filter($aggs, function ($agg) use ($filters) {
       return FALSE === array_search($agg->aggregation, $filters);
     });
   }
 
-  public static function get_taxonomies_count() {
-    return count(self::get_taxonomies_as_array(variable_get_value('mica_taxonomy_order')));
+  /**
+   * GEt taxonomies count.
+   *
+   * @return int
+   *   The number of taxonomies.
+   */
+  public static function getTaxonomiesCount() {
+    return count(self::getTaxonomiesAsArray(variable_get_value('mica_taxonomy_order')));
   }
 
   /**
-   * Orders the matching taxonomies by based on the order defind in 'mica_taxonomy_order'
-   * @param $taxonomies
-   * @param $getter
+   * Orders the matching taxonomies.
+   *
+   * By based on the order defind in 'mica_taxonomy_order'.
+   *
+   * @param object $taxonomies
+   *   The taxonomies object.
+   * @param string $getter
+   *   The getter method.
    */
-  public static function order_taxonomies(&$taxonomies, $getter) {
+  public static function orderTaxonomies(&$taxonomies, $getter) {
     $order_taxonomy_variable = variable_get_value('mica_taxonomy_order');
-
     if (!empty($taxonomies) && !empty($order_taxonomy_variable)) {
-      $ordered_taxonomies = self::get_taxonomies_as_array($order_taxonomy_variable);
-
-      $taxonomies = array_map(function ($n) use ($taxonomies, $getter) {
-        $tmp = array_filter($taxonomies, function ($t) use ($n, $getter) {
-          return $getter($t) === $n;
-        });
-
+      $ordered_taxonomies = self::getTaxonomiesAsArray($order_taxonomy_variable);
+      $taxonomies = array_map(
+        function ($n) use ($taxonomies, $getter) {
+        $tmp = array_filter($taxonomies,
+          function ($t) use ($n, $getter) {
+            return $getter($t) === $n;
+          }
+        );
         return reset($tmp);
-      }, $ordered_taxonomies);
-
-      $taxonomies = array_filter($taxonomies, function ($t) {
-        return !empty($t);
-      });
+        }
+      , $ordered_taxonomies);
+      $taxonomies = array_filter($taxonomies, function ($t) {return !empty($t);
+      }
+      );
     }
   }
 
-  public static function order_facet_taxonomies(&$taxonomies, $getter) {
+  /**
+   * Order the facet taxonomy object.
+   *
+   * @param object $taxonomies
+   *   The taxonomies object.
+   * @param string $getter
+   *   The getter method.
+   */
+  public static function orderFacetTaxonomies(&$taxonomies, $getter) {
     $order_taxonomy_variable = variable_get_value('mica_taxonomy_order');
 
     if (!empty($taxonomies) && !empty($order_taxonomy_variable)) {
-      $ordered_taxonomies = self::get_taxonomies_as_array($order_taxonomy_variable);
+      $ordered_taxonomies = self::getTaxonomiesAsArray($order_taxonomy_variable);
 
       $taxonomies = array_filter($taxonomies, function ($taxonomy) use ($ordered_taxonomies, $getter) {
         return empty($taxonomy->children) || FALSE !== array_search($getter($taxonomy), $ordered_taxonomies);
@@ -523,7 +659,7 @@ class MicaClient {
         }
       }
 
-      // compact the index and value arrays by removing padding value -9999
+      // Compact the index and value arrays by removing padding value -9999.
       $indexes = array_filter($indexes, function ($e) {
         return $e !== NULL;
       });
@@ -534,33 +670,50 @@ class MicaClient {
 
       asort($indexes);
 
-      // place the values at the proper position
+      // Place the values at the proper position.
       while (count($indexes) > 0) {
         $taxonomies[array_pop($indexes)] = array_pop($values);
       }
     }
   }
 
-  static private function get_taxonomies_as_array($taxonomies) {
+  /**
+   * Get taxonomies as array.
+   *
+   * @param string $taxonomies
+   *   A string taxonomies.
+   *
+   * @return array
+   *   The taxonomies as an array.
+   */
+  static private function getTaxonomiesAsArray($taxonomies) {
     return empty($taxonomies) ? array() : explode(',', preg_replace('/\s*,\s*/', ',', trim($taxonomies)));
   }
 
-  static function get_name_entity_by_id_aggregation($type, $aggregation_facet, $id) {
-    foreach ($_SESSION[$type][$aggregation_facet] as $entity) {
-      if ($entity->id == $id) {
-        return obiba_mica_commons_get_localized_field($entity, 'name');
-      }
-    }
-
-    return NULL;
-  }
-
-  static function has_entity_aggregations($entity) {
+  /**
+   * Check if the entity has aggregations.
+   *
+   * @param object $entity
+   *   The entity to check (variable, study, network, ...).
+   *
+   * @return bool
+   *   If yes or no has aggregations.
+   */
+  public static function hasEntityAggregations($entity) {
     return !empty($entity->{'obiba.mica.TermsAggregationResultDto.terms'})
     || !empty($entity->{'obiba.mica.StatsAggregationResultDto.stats'});
   }
 
-  static function has_entity_by_id_aggregation($facet) {
+  /**
+   * Check if the entity has a facet in aggregations.
+   *
+   * @param string $facet
+   *   The facet name.
+   *
+   * @return bool
+   *   If yes or no has aggregations.
+   */
+  public static function hasEntityByIdAggregation($facet) {
     if (!empty($_SESSION['studies']['aggregations'])) {
       foreach ($_SESSION['studies']['aggregations'] as $entity) {
         if (!empty($entity->aggregation) && $entity->aggregation == $facet) {
@@ -590,71 +743,95 @@ class MicaClient {
     return FALSE;
   }
 
-  static function obiba_mica_search_get_item_count($type, $aggregation_facet, $id) {
-    if (!empty($_SESSION[$type][$aggregation_facet])) {
-      foreach ($_SESSION[$type][$aggregation_facet] as $value) {
-        if ($value->key == $id) {
-          return $value->count;
-        }
-      }
-    }
-    return NULL;
-  }
-
-  public function pagination_list_search_parameters($current_page = 0, $type = NULL, $size = NULL) {
-    return self::next_page_offset( //
-      empty($current_page) ? 0 : $current_page, //
-      empty($size) ? MicaClient::getResponsePageSize() : $size, //
-      @$_SESSION[strtolower($type)]['aggregations']['total_hits'] //
+  /**
+   * The search list pagination parameters.
+   *
+   * @param int $current_page
+   *   The current page number
+   * @param string $type
+   *   The entity type.
+   * @param int $size
+   *   The size server response.
+   *
+   * @return float|int
+   *   The next page offset.
+   */
+  public function paginationListSearchParameters($current_page = 0, $type = NULL, $size = NULL) {
+    return self::nextPageOffset(
+      empty($current_page) ? 0 : $current_page,
+      empty($size) ? MicaClient::getResponsePageSize() : $size,
+      @$_SESSION[strtolower($type)]['aggregations']['total_hits']
     );
   }
 
-  static function next_page_offset($current_page = 0, $size, $total) {
+  /**
+   * Calculate the next offset page.
+   *
+   * @param int $current_page
+   *   The current page number.
+   * @param int $size
+   *   The size server response.
+   * @param int $total
+   *   The total in server.
+   *
+   * @return int
+   *   The next page offset.
+   */
+  public static function nextPageOffset($current_page = 0, $size = NULL, $total = NULL) {
     $nb_pages = ceil($total / $size);
-
     $from = 0;
     if (!empty($current_page)) {
-      $pageActuelle = intval($current_page);
-      if ($pageActuelle > $nb_pages) {
-        $pageActuelle = $nb_pages;
+      $actual_page = intval($current_page);
+      if ($actual_page > $nb_pages) {
+        $actual_page = $nb_pages;
       }
-
-      $from = ($pageActuelle) * $size;
+      $from = ($actual_page) * $size;
     }
 
     return $from;
   }
 
   /**
-   * Dto filter construction
-   * @param $type
-   * @param null $request_param url passed parameters,
-   * @param $from
-   * @internal param null $hierarchical_relation
-   * @internal param null $type_dto_search must be 'study' or 'dataset',
-   * @internal param null $spec_dto_params specific passed parameters,
-   * @internal param null $size number of results
-   * @internal param null $parent_child array must be 'parent'=>'<entity parent>' or 'child'=>'<entity parent>',
+   * Dto filter construction.
+   *
+   * @param string $type
+   *   Entity type.
+   * @param object $request_param
+   *   The request parameters.
+   * @param int $from
+   *   The next page offset.
+   * @param string $group_by
+   *   Group by parameters.
+   * @param bool $with_facets
+   *   With facet or not.
+   *
    * @return string
+   *   A json of constructed filter request.
    */
-  protected function dto_filter_construct($type, $request_param = NULL, $from = 0, $group_by = NULL, $withFacets = TRUE) {
+  protected function dtoFilterConstruct($type, $request_param = NULL, $from = 0, $group_by = NULL, $with_facets = TRUE) {
     global $language;
     $lang = $language->language;
     $page_size = MicaClient::getResponsePageSize();
-    $queryDtoBuilder = JoinQueryDtoBuilder::newBuilder(json_decode($request_param), $page_size, $lang, $withFacets);
-    Protobuf::setDefaultCodec(new Protobuf\Codec\Json);
-    $json_query_encoded = //
-      Protobuf::encode($queryDtoBuilder->documentQuery($type, $from, $page_size, $group_by)->build());
+    $query_dto_builder = JoinQueryDtoBuilder::newBuilder(json_decode($request_param), $page_size, $lang, $with_facets);
+    Protobuf::setDefaultCodec(new Protobuf\Codec\Json());
+    $json_query_encoded
+      = Protobuf::encode($query_dto_builder->documentQuery($type, $from, $page_size, $group_by)
+      ->build());
 
     return $json_query_encoded;
   }
 
   /**
-   * Merge any associative array query parameters to current json parameter
-   * @param array|associative $param_to_add associative array of param to add array('variables' =>array('terms'=>array('studyIds'=>'clsa-elcv-1')))
+   * Merge any associative array query parameters to current json parameter.
+   *
+   * @param array $param_to_add
+   *   Associative $param_to_add associative array of param to add
+   *   array('variables' =>array('terms'=>array('studyIds'=>'clsa-elcv-1'))).
+   *
    * @return string
+   *   The merged json DTO parameters.
    */
-  static function add_parameter_dto_query_link(array $param_to_add) {
+  public static function addParameterDtoQueryLink(array $param_to_add) {
     $url_parm = explode('?', request_uri());
     if (!empty($url_parm[1])) {
       parse_str($url_parm[1], $parts);
@@ -664,27 +841,56 @@ class MicaClient {
       else {
         $array_current_query = new stdClass();
       }
-      MicaClient::add_parameter_terms($array_current_query, $param_to_add);
+      MicaClient::addParameterTerms($array_current_query, $param_to_add);
       return json_encode($array_current_query);
     }
     else {
       $array_current_query = new stdClass();
     }
-    MicaClient::add_parameter_terms($array_current_query, $param_to_add);
+    MicaClient::addParameterTerms($array_current_query, $param_to_add);
     return json_encode($array_current_query);
   }
 
-  public static function create_query_dto_as_string($param_to_add) {
-    return json_encode(MicaClient::create_query_dto($param_to_add));
+  /**
+   * Create a json query dto.
+   *
+   * @param array $param_to_add
+   *   An array parameters ex :
+   *   <code>
+   *    array("variables" => array("terms" => array("dceIds" => $dce_id))).
+   *   <code>
+   *
+   * @return string
+   *   A Json string.
+   */
+  public static function createQueryDtoAsString(array $param_to_add) {
+    return json_encode(MicaClient::createQueryDto($param_to_add));
   }
 
-  public static function create_query_dto($param_to_add) {
+  /**
+   * Create query Dto.
+   *
+   * @param array $param_to_add
+   *   The parameters to add.
+   *
+   * @return object
+   *   The Dto object query.
+   */
+  public static function createQueryDto(array $param_to_add) {
     $query = new stdClass();
-    MicaClient::add_parameter_terms($query, $param_to_add);
+    MicaClient::addParameterTerms($query, $param_to_add);
     return $query;
   }
 
-  public static function add_parameter_terms($array_current_query, $param_to_add) {
+  /**
+   * Add parameters term to Dto query.
+   *
+   * @param object $array_current_query
+   *   The current query.
+   * @param array $param_to_add
+   *   The parameters to add.
+   */
+  public static function addParameterTerms($array_current_query, array $param_to_add) {
     foreach ($param_to_add as $entity_name => $entity) {
       foreach ($entity['terms'] as $term_name => $term_value) {
         $term_values = array($term_value);
@@ -692,10 +898,9 @@ class MicaClient {
           $term_values = $term_value;
         }
         foreach ($term_values as $value) {
-          if (empty($array_current_query->{$entity_name}->terms->{$term_name}) //
+          if (empty($array_current_query->{$entity_name}->terms->{$term_name})
             || !in_array($value, $array_current_query->{$entity_name}->terms->{$term_name}->values)
-          ) { //
-
+          ) {
             $array_current_query->{$entity_name}->terms->{$term_name}->values[] = $value;
           }
         }
@@ -709,7 +914,18 @@ class MicaClient {
     }
   }
 
-  public static function concatenate_parameter_terms($array_query, $param_to_add) {
+  /**
+   * Concatenate terms parameters.
+   *
+   * @param array $array_query
+   *   The query parameters.
+   * @param array $param_to_add
+   *   The parameters to add.
+   *
+   * @return array
+   *   Concatenated query array.
+   */
+  public static function concatenateParameterTerms($array_query, array $param_to_add) {
     foreach ($param_to_add as $entity_name => $entity) {
       foreach ($entity['terms'] as $term_name => $term_value) {
         $term_values = array($term_value);
@@ -717,14 +933,12 @@ class MicaClient {
           $term_values = $term_value;
         }
         foreach ($term_values as $value) {
-          if (empty($array_query->{$entity_name}->terms->{$term_name}) //
+          if (empty($array_query->{$entity_name}->terms->{$term_name})
             || !in_array($value, $array_query->{$entity_name}->terms->{$term_name}->values)
-          ) { //
-
+          ) {
             $array_query->{$entity_name}->terms->{$term_name}->values[] = $value;
           }
         }
-
         if (!empty($array_query->{$entity_name}->terms->{$term_name}) &&
           empty($array_query->{$entity_name}->terms->{$term_name}->{'op'})
         ) {
@@ -735,51 +949,72 @@ class MicaClient {
     return $array_query;
   }
 
-  public static function chart_query_builders($query = NULL, $bucket = NULL, $taxonomy_name = NULL, $vocabulary_name = NULL, $terms = NULL) {
+  /**
+   * The query builder for charts.
+   *
+   * @param string $query
+   *   The query for the charts.
+   * @param object $bucket
+   *   The bucket.
+   * @param string $taxonomy_name
+   *   The taxonomy name.
+   * @param string $vocabulary_name
+   *   The vocabulary name.
+   * @param array $terms
+   *   The terms.
+   *
+   * @return string
+   *   A json query.
+   */
+  public static function chartQueryBuilders($query = NULL, $bucket = NULL, $taxonomy_name = NULL, $vocabulary_name = NULL, array $terms = NULL) {
     $parameters = array();
     $current_path_alias = drupal_get_path_alias();
-    $common_param =
-      array(
+    $common_param
+      = array(
         'variables' => array(
           'terms' => array(
             'attributes-'
             . $taxonomy_name . '__' .
-            $vocabulary_name . '-und' => $terms
-          )
-        )
+            $vocabulary_name . '-und' => $terms,
+          ),
+        ),
       );
     if (!empty($query)) {
-      return json_encode(MicaClient::concatenate_parameter_terms(json_decode($query), $common_param));
+      return json_encode(MicaClient::concatenateParameterTerms(json_decode($query), $common_param));
     }
     if (strpos($current_path_alias, 'network')) {
       $parameters = array(
         'studies' => array(
           'terms' => array(
             $bucket->field => $bucket->value,
-          )
-        )
+          ),
+        ),
       );
     }
     if (strpos($current_path_alias, 'study')) {
       $parameters = array(
         'studies' => array(
           'terms' => array(
-            'studyIds' => arg(2, $current_path_alias)
-          )
-        )
+            'studyIds' => arg(2, $current_path_alias),
+          ),
+        ),
       );
     }
     $term_param = array_merge($parameters, $common_param);
-    return MicaClient::add_parameter_dto_query_link($term_param);
+    return MicaClient::addParameterDtoQueryLink($term_param);
 
   }
 
   /**
-   * Parse a string header response and return an key/value array attributes
-   * @param $raw_headers
+   * Parse a string header response and return an key/value array attributes.
+   *
+   * @param string $raw_headers
+   *   The raw header.
+   *
    * @return array
+   *   The parsed header on an array.
    */
-  private function parse_headers($raw_headers) {
+  private function parseHeaders($raw_headers) {
     $headers = [];
 
     foreach (explode("\n", $raw_headers) as $i => $h) {
@@ -789,17 +1024,21 @@ class MicaClient {
         $headers[$h[0]] = trim($h[1]);
       }
     }
-
     return $headers;
   }
 
   /**
-   * get property by given attribute
-   * @param $attribute
-   * @param $property
-   * @return bool|mixed
+   * Get property by given attribute.
+   *
+   * @param string $attribute
+   *   The Attribute to get.
+   * @param string $property
+   *   The property.
+   *
+   * @return string
+   *   The property value.
    */
-  private function parse_header($attribute, $property) {
+  private function parseHeader($attribute, $property) {
     $attributes_array = explode(';', $attribute);
     foreach ($attributes_array as $property_string) {
       if (strstr($property_string, $property)) {
@@ -810,20 +1049,27 @@ class MicaClient {
   }
 
   /**
-   * return the value of a given key header attribute  (filename, charset)
-   * ToDo may be need to be extended to retrieve more attributes (User-Agent, ...)
-   * @param $header
-   * @param $property
-   * @param null $attribute
-   * @return bool|mixed|null
+   * Return the value of a given key header attribute  (filename, charset).
+   *
+   * ToDo may be need to be extended to retrieve more attributes(User-Agent,..).
+   *
+   * @param array $header
+   *   The header to parse.
+   * @param string $property
+   *   The property to find.
+   * @param string $attribute
+   *   The attribute.
+   *
+   * @return string
+   *   The value of property.
    */
-  private function get_property_value_from_header_array($header, $property, $attribute = NULL) {
+  private function getPropertyValueFromHeaderArray(array $header, $property, $attribute = NULL) {
     if (!empty($attribute)) {
-      return $this->parse_header($header[$attribute], $property);
+      return $this->parseHeader($header[$attribute], $property);
     }
     else {
       foreach ($header as $attributes) {
-        $find_property_value = $this->parse_header($attributes, $property);
+        $find_property_value = $this->parseHeader($attributes, $property);
         if (!empty($find_property_value)) {
           return $find_property_value;
         }
@@ -833,10 +1079,15 @@ class MicaClient {
   }
 
   /**
-   * @param $file_resource
-   * @return mixed
+   * Get the file extension from file resource.
+   *
+   * @param string $file_resource
+   *   The file name.
+   *
+   * @return string
+   *   The file extension.
    */
-  private function get_file_extension($file_resource) {
+  private function getFileExtension($file_resource) {
     $file_array = explode('.', $file_resource);
     $extension_file = count($file_array);
 
@@ -844,52 +1095,62 @@ class MicaClient {
   }
 
   /**
-   * Deal with downloadable resources from server (Images, attachments)
-   * @param:  $entity_type (study, dce, network ...), $entity_id, $file_id
-   * @return : an array containing :
-   *            data : The raw file to download
-   *            filename : The real file name of the file
-   *            raw_header_array : the raw of header response
-   *           or in case of error
-   *            code : the error code
-   *            message : the error message
-   * */
-  public function download_file($entity_type, $entity_id, $file_id) {
+   * Deal with downloadable resources from server (Images, attachments).
+   *
+   * @param string $entity_type
+   *   Study, dce, network ...
+   * @param string $entity_id
+   *   The id of the entity.
+   * @param string $file_id
+   *   The id of the stored file on the server.
+   *
+   * @return array
+   *   containing :
+   *    data : The raw file to download
+   *    filename : The real file name of the file
+   *    raw_header_array : the raw of header response
+   *    or in case of error
+   *    code : the error code
+   *    message : the error message
+   */
+  public function downloadFile($entity_type, $entity_id, $file_id) {
     $url = $this->micaUrl . "/" . $entity_type . "/" . $entity_id . "/file/" . $file_id . "/_download";
     $request = new HttpClientRequest($url, array(
       'method' => HttpClientRequest::METHOD_GET,
       'headers' => self::authorizationHeader(array(
-            'Accept' => array(self::HEADER_BINARY),
-          )
-        ),
+          'Accept' => array(self::HEADER_BINARY),
+        )
+      ),
     ));
 
     $client = $this->client();
     try {
       $data = $client->execute($request);
       $this->setLastResponse($client->lastResponse);
-      $file_name = $this->get_property_value_from_header_array($this->parse_headers($client->lastResponse->headers),
+      $file_name = $this->getPropertyValueFromHeaderArray($this->parseHeaders($client->lastResponse->headers),
         'filename',
         'Content-Disposition'
       );
 
       $raw_data = array(
-        'extension' => $this->get_file_extension($file_name),
+        'extension' => $this->getFileExtension($file_name),
         'data' => $data,
         'filename' => $file_name,
-        'raw_header_array' => $this->parse_headers($client->lastResponse->headers)
+        'raw_header_array' => $this->parseHeaders($client->lastResponse->headers),
       );
       return $raw_data;
     }
     catch (HttpClientException $e) {
       watchdog('MicaClient', 'Connection to server fail,  Error serve code : @code, message: @message',
-        array('@code' => $e->getCode(), '@message' => $e->getMessage()), WATCHDOG_WARNING);
+        array(
+          '@code' => $e->getCode(),
+          '@message' => $e->getMessage(),
+        ), WATCHDOG_WARNING);
       return $raw_data = array(
         'code' => $e->getCode(),
-        'message' => $e->getMessage()
+        'message' => $e->getMessage(),
       );
     }
 
   }
-
 }

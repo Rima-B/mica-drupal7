@@ -7,6 +7,3 @@ dependencies[] = obiba_mica_commons
 dependencies[] = obiba_mica_model
 
 files[] = includes/obiba_mica_study_resource.inc
-
-version = 7.34-1.0-dev
-project = obiba_mica_study

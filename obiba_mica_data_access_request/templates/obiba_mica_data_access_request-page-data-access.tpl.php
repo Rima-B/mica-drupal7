@@ -1,3 +1,10 @@
+<?php
+/**
+ * @file
+ * Code for the obiba_mica_data_access_request modules.
+ */
+
+?>
 <!--
   ~ Copyright (c) 2015 OBiBa. All rights reserved.
   ~
@@ -13,12 +20,17 @@
 <?php if ($data_access_register_user) : ?>
   <p class="md-top-margin">
     <?php print t('You need to be authenticated to start an application') ?>
-    <?php print l(t(variable_get_value('access_signup_button')), 'agate/register', array('attributes' => array('class' => 'btn btn-info'))) ?>
-    <?php print l(t(variable_get_value('access_signin_button')), 'user/login', array(
+    <?php print l(variable_get_value('access_signup_button'), MicaClientPathProvider::AGATE_REGISTER . '/',
+      array(
+        'attributes' => array('class' => 'btn btn-info'),
+        'fragment' => 'join',
+      )) ?>
+
+    <?php print l(variable_get_value('access_signin_button'), 'user/login', array(
       'query' => array('destination' => MicaClientPathProvider::DATA_ACCESS_HOME),
       'attributes' => array(
-        'class' => 'btn btn-default'
-      )
+        'class' => 'btn btn-default',
+      ),
     )) ?>
   </p>
 <?php endif; ?>
@@ -27,26 +39,27 @@
   <p class="md-top-margin text-center">
     <?php
     $can_access = obiba_mica_data_access_request_user_permission(MicaDataAccessRequest::LIST_DATA_ACCESS);
-    if ($can_access) {
-      print l(t(variable_get_value('access_my_requests_button')), 'mica/data_access/requests',
-      array(
-        'attributes' => array('class' => array('btn', 'btn-primary'))
-      )
-      );
-    } ?>
+    ?>
+    <?php if ($can_access) : ?>
+      <?php
+      print l(variable_get_value('access_my_requests_button'), 'mica/data_access/requests',
+        array(
+          'attributes' => array('class' => array('btn', 'btn-primary')),
+        )
+      ); ?>
+    <?php endif; ?>
     <?php
-    $can_access = obiba_mica_data_access_request_user_permission(MicaDataAccessRequest::NEW_DATA_ACCESS);
-    if ($can_access) {
-      print l('<i class="fa fa-plus"></i> ' . t(variable_get_value('access_new_request_button')), 'mica/data-access/request',
+    $can_create_access = obiba_mica_data_access_request_user_permission(MicaDataAccessRequest::NEW_DATA_ACCESS);
+    ?>
+    <?php if ($can_create_access) : ?>
+      <?php
+      print l('<i class="fa fa-plus"></i> ' . variable_get_value('access_new_request_button'), 'mica/data-access/request',
         array(
           'attributes' => array('class' => array('btn', 'btn-info', 'indent')),
           'fragment' => 'new',
-          'html' => TRUE
+          'html' => TRUE,
         )
-      );
-    } ?>
+      ); ?>
+    <?php endif; ?>
   </p>
 <?php endif; ?>
-
-
-

@@ -5,6 +5,3 @@ core = 7.x
 dependencies[] = obiba_mica_commons
 dependencies[] = obiba_mica_model
 dependencies[] = obiba_mica_study
-
-version = 7.34-1.0-dev
-project = obiba_mica_network

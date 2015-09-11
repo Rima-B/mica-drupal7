@@ -14,7 +14,7 @@
   <div class="col-md-10 col-sm-12 col-xs-12">
     <div>
       <h4>
-        <?php print MicaClientAnchorHelper::network_list_item($network); ?>
+        <?php print MicaClientAnchorHelper::networkListItem($network); ?>
       </h4>
       <hr class="no-margin">
       <p class="md-top-margin">
@@ -41,17 +41,17 @@
       ?>
       <?php if (!empty($studies) && variable_get_value('networks_column_studies')): ?>
         <span class="label label-default rounded right-indent">
-          <?php print MicaClientAnchorHelper::network_studies(t('@count ' . $caption, array('@count' => $studies)), $network->id) ?>
+          <?php print MicaClientAnchorHelper::networkStudies(t('@count ' . $caption, array('@count' => $studies)), $network->id) ?>
         </span>
       <?php endif ?>
       <?php if (!empty($datasets) && (variable_get_value('networks_column_study_datasets') || variable_get_value('networks_column_harmonization_datasets'))): ?>
         <span class="label label-default rounded right-indent">
-            <?php print MicaClientAnchorHelper::network_datasets(t('@count ' . $dataset_caption, array('@count' => $datasets)), $network->id) ?>
+            <?php print MicaClientAnchorHelper::networkDatasets(t('@count ' . $dataset_caption, array('@count' => $datasets)), $network->id) ?>
           </span>
       <?php endif ?>
       <?php if (!empty($variables) && variable_get_value('networks_column_variables')): ?>
         <span class="label label-default rounded">
-            <?php print MicaClientAnchorHelper::network_variables(t('@count ' . $vars_caption,
+            <?php print MicaClientAnchorHelper::networkVariables(t('@count ' . $vars_caption,
               array('@count' => obiba_mica_commons_format_number($variables))), $network->id) ?>
           </span>
       <?php endif ?>

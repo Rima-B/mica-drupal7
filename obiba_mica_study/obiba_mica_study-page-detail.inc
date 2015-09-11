@@ -187,7 +187,7 @@ function obiba_mica_study_get_populations_detail($study_detail, $dce_variables_n
       if (!empty($population->dataCollectionEvents)) {
         $dce_rows = obiba_mica_study_get_dce_table($population->dataCollectionEvents, $study_detail->id, $population->id);
         uasort($dce_rows, 'obiba_mica_study_sort_dce');
-        _obiba_mica_commons_normalize_rows($dce_rows);
+        obiba_mica_commons_normalize_rows($dce_rows);
 
         $population['dce-tab'] = theme(
           'table',
@@ -265,7 +265,7 @@ function obiba_mica_study_get_dce_detail($study_id, $population_id, $data_collec
       'study_id' => $study_id,
       'population_id' => $population_id,
       'dce_uid' => $study_id . ':' . $population_id . ':' . $dce->id,
-      'dce_id_target' => MicaClientPathHelpers::replace_plus_in_url($study_id . '-' . $population_id . '-' . $dce->id),
+      'dce_id_target' => MicaClientPathHelpers::replacePlusInUrl($study_id . '-' . $population_id . '-' . $dce->id),
       'dce' => $dce,
       'attachements' => $themed_attachment
     ));
@@ -291,7 +291,7 @@ function obiba_mica_study_get_dce_table($data_collection_events, $study_id, $pop
           'external' => TRUE,
           'attributes' => array(
             'data-toggle' => 'modal',
-            'data-target' => MicaClientPathHelpers::replace_plus_in_url('#dce-' . $study_id . '-' . $population_id . '-' . $dce_wrapper->id)
+            'data-target' => MicaClientPathHelpers::replacePlusInUrl('#dce-' . $study_id . '-' . $population_id . '-' . $dce_wrapper->id)
           )
         )),
         'desc' => $dce_description,
@@ -326,7 +326,7 @@ function obiba_mica_study_get_variables($study_id) {
 
 function obiba_mica_study_coverage($study_id) {
   $coverage['charts'] = obiba_mica_search_query_charts(
-    MicaClient::add_parameter_dto_query_link(array('variables' => array('terms' => array('studyIds' => $study_id)))),
+    MicaClient::addParameterDtoQueryLink(array('variables' => array('terms' => array('studyIds' => $study_id)))),
     function ($b, $study_id) {
       // filter the dces of the current study
       return strpos($b->value, ':') === FALSE || strpos($b->value, $study_id . ':') === 0;

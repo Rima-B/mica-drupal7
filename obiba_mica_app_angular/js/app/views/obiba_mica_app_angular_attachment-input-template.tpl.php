@@ -1,3 +1,11 @@
+<?php
+/**
+ * @file
+ * Code for the obiba_mica_app_angular modules.
+ */
+
+?>
+
 <button type="button" class="btn btn-primary btn-xs" aria-hidden="true" ngf-select ngf-change="onFileSelect($files)"
   translate>file.upload.button
 </button>

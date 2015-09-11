@@ -123,7 +123,7 @@ function obiba_mica_study_get_studies($query = NULL, $sort = NULL, $order = NULL
   $study_resource = new MicaStudyResource();
   $size_response = intval($study_limits) > 0 ? $study_limits : MicaClient::getResponsePageSizeSmall();
   if (!empty($_GET['page'])) {
-    $from = $study_resource->pagination_list_search_parameters($_GET['page'], 'studies', $size_response);
+    $from = $study_resource->paginationListSearchParameters($_GET['page'], 'studies', $size_response);
   }
   $response = $study_resource->get_studies($query, $from, $size_response, $sort, $order);
   if (!empty($response)) {
@@ -143,8 +143,8 @@ function obiba_mica_study_studies_table($studies) {
   $headers = obiba_mica_study_study_summaries_table_headers();
   $per_page = 20;
 
-  $args = array('quantity' => $total, 'element' => MicaStudyResource::PAGINATE_studies);
-  $current_page = pager_default_initialize($total, $per_page, MicaStudyResource::PAGINATE_studies);
+  $args = array('quantity' => $total, 'element' => MicaStudyResource::PAGINATE_STUDIES);
+  $current_page = pager_default_initialize($total, $per_page, MicaStudyResource::PAGINATE_STUDIES);
   $chunks = array_chunk($rows, $per_page, TRUE);
   return theme(
     'table',

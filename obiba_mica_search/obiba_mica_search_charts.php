@@ -178,7 +178,7 @@ function obiba_mica_search_query_charts($query, Callable $bucket_filter = NULL, 
               if (empty($bucket_filter) || $bucket_filter($bucket, $bucket_filter_arg)) {
                 $data[$bucket->value][] = $bucket->count;
                 if (!empty($terms)) {
-                  $link[$i] = MicaClient::chart_query_builders(
+                  $link[$i] = MicaClient::chartQueryBuilders(
                     NULL,
                     $bucket,
                     $taxonomy_coverage->taxonomy->name,
@@ -193,7 +193,7 @@ function obiba_mica_search_query_charts($query, Callable $bucket_filter = NULL, 
           else {
             $data[t('Variables')][] = $vocabulary_coverage->count;
             if (!empty($terms)) {
-              $link[1] = MicaClient::chart_query_builders(
+              $link[1] = MicaClient::chartQueryBuilders(
                 $query,
                 NULL,
                 $taxonomy_coverage->taxonomy->name,

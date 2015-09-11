@@ -53,6 +53,7 @@
               switch (id) {
                 case 'form':
                   break;
+
                 case 'comments':
                   retrieveComments();
                   break;
@@ -238,7 +239,7 @@
                 }, function onSubmitted() {
                   $modal.open({
                     scope: $scope,
-                    templateUrl: Drupal.settings.basePath + 'obiba_main_app_angular/obiba_mica_data_access_request/data-access-request-submitted-modal'
+                    templateUrl: Drupal.settings.basePath + 'obiba_mica_app_angular/obiba_mica_data_access_request/data-access-request-submitted-modal'
                   });
                   onUpdatStatusSuccess();
                 }, onError);
@@ -343,7 +344,7 @@
 
               $modal.open({
                 scope: $scope,
-                templateUrl: Drupal.settings.basePath + 'obiba_main_app_angular/obiba_mica_data_access_request/data-access-request-validation-modal'
+                templateUrl: Drupal.settings.basePath + 'obiba_mica_app_angular/obiba_mica_data_access_request/data-access-request-validation-modal'
               });
             };
 
@@ -454,7 +455,6 @@
             $scope.validate = validate;
 
           }]);
-
 
     }
   }

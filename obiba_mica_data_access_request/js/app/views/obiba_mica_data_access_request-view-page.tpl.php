@@ -1,3 +1,10 @@
+<?php
+/**
+ * @file
+ * Code for the obiba_mica_data_access_request modules.
+ */
+
+?>
 <!--
   ~ Copyright (c) 2015 OBiBa. All rights reserved.
   ~
@@ -7,13 +14,14 @@
   ~ You should have received a copy of the GNU General Public License
   ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   -->
+
 <div>
   <h2 class="page-header">
     <a href="<?php print url(MicaClientPathProvider::DATA_ACCESS_LIST); ?>"
-       title="<?php print t(variable_get_value('access_my_requests_button')); ?>">
+       title="<?php print variable_get_value('access_my_requests_button'); ?>">
       <i class="glyphicon glyphicon-chevron-left"></i>
     </a>
-    <?php print t(variable_get_value('access_request_page_title')); ?>:
+    <?php print variable_get_value('access_request_page_title'); ?>:
     {{dataAccessRequest.id}}
   </h2>
 
@@ -56,7 +64,7 @@
         <?php print t('Edit'); ?>
       </a>
       <a target="_self" ng-href="" class="btn btn-default download-btn">
-        <i class="glyphicon glyphicon-download-alt"></i> <span><?php print t(variable_get_value('access_download_button')); ?></span>
+        <i class="glyphicon glyphicon-download-alt"></i> <span><?php print variable_get_value('access_download_button'); ?></span>
       </a>
       <a ng-click="delete()"
         ng-if="actions.canDelete(dataAccessRequest)"
@@ -80,7 +88,7 @@
           <div sf-model="form.model" sf-form="form.definition"
             sf-schema="form.schema"></div>
         </form>
-        <h2><?php print t(variable_get_value('access_documents_section_title')); ?></h2>
+        <h2><?php print variable_get_value('access_documents_section_title'); ?></h2>
 
         <p ng-if="dataAccessRequest.attachments.length == 0">
           <?php print t('No documents provided.'); ?>
@@ -93,7 +101,7 @@
           </div>
         </div>
       </tab>
-      <tab ng-if="<?php print variable_get_value('access_comments_enabled') ? 'true': 'false'?>" ng-click="selectTab('comments')"
+      <tab ng-if="<?php print variable_get_value('access_comments_enabled') ? 'true' : 'false'?>" ng-click="selectTab('comments')"
         heading="<?php print t('Comments'); ?>">
         <obiba-comments comments="form.comments" on-update="updateComment"
           on-delete="deleteComment" edit-action="EDIT"
@@ -104,7 +112,7 @@
       <tab heading="<?php print t('History'); ?>">
         <div
           ng-include="'<?php ;
-          print base_path(); ?>obiba_main_app_angular/obiba_mica_data_access_request/obiba_mica_data_access_request-histroy-view'"></div>
+          print base_path(); ?>obiba_mica_app_angular/obiba_mica_data_access_request/obiba_mica_data_access_request-histroy-view'"></div>
       </tab>
 
     </tabset>

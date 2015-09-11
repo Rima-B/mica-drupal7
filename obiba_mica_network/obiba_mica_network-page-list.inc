@@ -72,7 +72,7 @@ function obiba_mica_network_get_networks($study_id, $query = NULL, $sort = NULL,
   $study_resource = new MicaNetworkResource();
   $size_response = !empty($network_limits) ? $network_limits : MicaClient::getResponsePageSizeSmall();
   if (!empty($_GET['page'])) {
-    $from = $study_resource->pagination_list_search_parameters($_GET['page'], 'networks', $size_response);
+    $from = $study_resource->paginationListSearchParameters($_GET['page'], 'networks', $size_response);
   }
   $networks = $study_resource->get_networks($study_id, $query, $from, $size_response, $sort, $sort_by);
   if (!empty($networks)) {
@@ -105,8 +105,8 @@ function obiba_mica_network_networks_table($networks_result) {
     return NULL;
   }
 
-  $args = array('quantity' => $total, 'element' => MicaNetworkResource::PAGINATE_networks);
-  $current_page = pager_default_initialize($total, $per_page, MicaNetworkResource::PAGINATE_networks);
+  $args = array('quantity' => $total, 'element' => MicaNetworkResource::PAGINATE_NETWORKS);
+  $current_page = pager_default_initialize($total, $per_page, MicaNetworkResource::PAGINATE_NETWORKS);
   $chunks = array_chunk($rows, $per_page, TRUE);
   return theme(
     'table',
@@ -124,7 +124,7 @@ function obiba_mica_network_networks_table_rows($networks) {
   if (!empty($networks)) {
     foreach ($networks as $network) {
       $stats = $network->{'obiba.mica.CountStatsDto.networkCountStats'};
-      $study_count = MicaClientAnchorHelper::network_studies($stats->studies, $network->id);
+      $study_count = MicaClientAnchorHelper::networkStudies($stats->studies, $network->id);
       $rows[] = array(
         obiba_mica_commons_get_localized_field($network, 'acronym'),
         MicaClientAnchorHelper::network($network),

@@ -10,8 +10,8 @@
       if (Drupal.settings.context) {
         $("#edit-search-query").on("keyup", function () {
           $.ajax({
-            url: Drupal.settings.context.url + '/' + $(this).val() + '/' + $("#edit-search-sort").val()
-              + '/' + $("#edit-search-sort-order").val() + '/0',
+            url: Drupal.settings.context.url + '/' + $(this).val() + '/' +
+            $("#edit-search-sort").val() + '/' + $("#edit-search-sort-order").val() + '/0',
             success: function (data) {
               if (data) {
                 $('#refresh-list').empty().append(data.list);

@@ -1,0 +1,4 @@
+name = "Obiba mica main app angular"
+description = "Obiba mica Angular main app"
+package = Obiba
+core = 7.x

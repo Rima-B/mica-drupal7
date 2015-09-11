@@ -93,7 +93,7 @@ function obiba_mica_network_study_table_rows($study_summaries) {
           isset($study_summary->targetNumber->number) ? obiba_mica_commons_format_number($study_summary->targetNumber->number) : NULL,
         obiba_mica_commons_countries($study_summary->countries),
         empty($study_summary->variables)
-          ? '-' : MicaClientAnchorHelper::study_variables(obiba_mica_commons_format_number($study_summary->variables), $study_summary->id)
+          ? '-' : MicaClientAnchorHelper::studyVariables(obiba_mica_commons_format_number($study_summary->variables), $study_summary->id)
       );
 
     }
@@ -113,7 +113,7 @@ function obiba_mica_network_study_table_headers() {
 }
 
 function obiba_mica_network_coverage($study_ids) {
-  return obiba_mica_search_query_charts(MicaClient::add_parameter_dto_query_link(array(
+  return obiba_mica_search_query_charts(MicaClient::addParameterDtoQueryLink(array(
       'variables' =>
         array('terms' => array('studyIds' => $study_ids))
     )), NULL, NULL,

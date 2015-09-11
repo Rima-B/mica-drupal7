@@ -1,0 +1,63 @@
+<?php
+/**
+ * @file
+ * Code to perform installation operations.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function obiba_mica_install() {
+  obiba_mica_block_configuration();
+  obiba_mica_theme_configuration();
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function obiba_mica_uninstall() {
+  variable_set('theme_default', 'bartik');
+  variable_set('admin_theme', 'seven');
+
+  variable_del('jquery_update_jquery_version');
+  variable_del('jquery_update_jquery_admin_version');
+
+  variable_del('obiba-progressbar-lib');
+  variable_del('obiba-progressbar-file');
+}
+
+/**
+ * Block configuration.
+ *
+ * Disable the form search, the navigation block and the login block.
+ */
+function obiba_mica_block_configuration() {
+  $blocks = array(
+    'form',
+    'navigation',
+    'login',
+  );
+
+  foreach ($blocks as $block) {
+    db_update('block')->fields(array('status' => 0, 'region' => -1))
+      ->condition('delta', $block)
+      ->condition('theme', 'obiba_bootstrap')
+      ->execute();
+  }
+
+}
+
+/**
+ * Variable default settings.
+ */
+function obiba_mica_theme_configuration() {
+  variable_set('theme_default', 'obiba_bootstrap');
+  variable_set('admin_theme', 'obiba_bootstrap');
+
+  variable_set('jquery_update_jquery_version', '1.8');
+  variable_set('jquery_update_jquery_admin_version', '1.8');
+
+  variable_set('obiba-progressbar-lib-version', '1.0.0');
+  variable_set('obiba-progressbar-lib', 'obiba-progressbar-1.0.0');
+  variable_set('obiba-progressbar-file', 'dist/obiba-progressbar');
+}

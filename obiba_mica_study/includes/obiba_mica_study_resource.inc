@@ -100,7 +100,7 @@ class MicaStudyResource extends MicaClient {
     $url = $this->micaUrl . '/studies/_search/?' . 'size=' . MicaClient::getResponsePageSize();
     $url_parm = explode('?', request_uri());
     if (empty($url_parm[1])) {
-      $dto_param = $this->dto_filter_construct('studies', NULL, NULL, $spec_dto_params);
+      $dto_param = $this->dtoFilterConstruct('studies', NULL, NULL, $spec_dto_params);
       if (empty(json_decode($dto_param)->filteredQuery->filter)) {
         $request = new HttpClientRequest($url, array(
           'method' => HttpClientRequest::METHOD_GET,
@@ -124,7 +124,7 @@ class MicaStudyResource extends MicaClient {
 
     }
     else {
-      $dto_param = $this->dto_filter_construct($url_parm[1], array('child' => 'Variable'), 'study', $spec_dto_params);
+      $dto_param = $this->dtoFilterConstruct($url_parm[1], array('child' => 'Variable'), 'study', $spec_dto_params);
       if (empty(json_decode($dto_param)->filteredQuery->filter)) {
         $url = $this->micaUrl . '/studies/_search/?from=' . json_decode($dto_param)->from . '&size=' . MicaClient::getResponsePageSize();
 
@@ -154,7 +154,7 @@ class MicaStudyResource extends MicaClient {
       $data = $client->execute($request);
       $this->setLastResponse($client->lastResponse);
       $dto_data_response = json_decode($data);
-      $this->session_facets_builder($dto_data_response);
+      $this->sessionFacetsBuilder($dto_data_response);
 
       $summaries_studies = !empty($dto_data_response->{'obiba.mica.StudyResultDto.result'}->summaries) ?
         $dto_data_response->{'obiba.mica.StudyResultDto.result'}->summaries : NULL;

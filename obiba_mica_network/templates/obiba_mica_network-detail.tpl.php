@@ -25,11 +25,11 @@
           <?php print t('Search') ?> <span class="caret"></span>
         </button>
         <ul class="dropdown-menu" role="menu">
-          <li><?php print MicaClientAnchorHelper::coverage_network($network_dto->id) ?></li>
-          <li><?php print MicaClientAnchorHelper::network_variables(NULL, $network_dto->id) ?></li>
+          <li><?php print MicaClientAnchorHelper::coverageNetwork($network_dto->id) ?></li>
+          <li><?php print MicaClientAnchorHelper::networkVariables(NULL, $network_dto->id) ?></li>
         </ul>
       <?php else:
-        print MicaClientAnchorHelper::network_variables(NULL, $network_dto->id, array('class' => 'btn btn-primary indent'));
+        print MicaClientAnchorHelper::networkVariables(NULL, $network_dto->id, array('class' => 'btn btn-primary indent'));
       ?>
       <?php endif; ?>
 

@@ -87,7 +87,7 @@ function obiba_mica_dataset_get_datasets($query, $sort, $sort_by, $dataset_resou
   $resource = new MicaDatasetResource();
   $size_response = !empty($dataset_limits) ? $dataset_limits : variable_get_value('mica_response_page_size_small');
   if (!empty($_GET['page'])) {
-    $from = $resource->pagination_list_search_parameters($_GET['page'], 'datasets', $size_response);
+    $from = $resource->paginationListSearchParameters($_GET['page'], 'datasets', $size_response);
   }
   $response = $resource->get_datasets($dataset_resource, NULL, $query, $from, $size_response, $sort, $sort_by);
   if (!empty($response)) {

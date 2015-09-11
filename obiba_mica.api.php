@@ -5,23 +5,15 @@
  */
 
 /**
- * Implementation of  hook_mica_override_templates_alter().
- * Alter default templates to display mica pages
- * @$themes_to_override an array of key/value key = name of the template to override and
- *                      the value = the file name of this template on the given module folder
- * all overridden templates must be in 'templates/' folder
- */
-function hook_mica_override_templates_alter(&$themes_to_override) {
-  $themes_to_override = array(
-    'obiba_mica_study_detail' => 'obiba_mica_study-detail'
-  );
-
-}
-
-/**
- * Given a harmonization csv file, this hook can alter the content as required
- * @param $csv
- * @return mixed
+ * A hook implementation.
+ *
+ * Given a harmonization csv file, this hook can alter the content as required.
+ *
+ * @param array $csv
+ *   The csv array.
+ *
+ * @return array
+ *   Can be the csv array modified on the implemented hook
  */
 function hook_harmonization_csv_alter($csv) {
   return $csv;

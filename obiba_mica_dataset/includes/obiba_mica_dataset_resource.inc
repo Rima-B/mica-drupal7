@@ -107,6 +107,7 @@ class MicaDatasetResource extends MicaClient {
    * @param $limit
    * @param null $sort field name to sort by
    * @param null $order "asc" or "desc"
+   * @param null $query
    * @return array|Protobuf\Message|mixed|null
    */
   public function get_variables($resource, $dataset_id, $from = 0, $limit = -1, $sort = NULL, $order = NULL, $query = NULL) {
@@ -115,9 +116,10 @@ class MicaDatasetResource extends MicaClient {
     $params .= empty($limit) ? '&limit=-1' : '&limit=' . $limit;
     $params .= empty($sort) ? '' : '&sort=' . $sort;
     $params .= empty($order) ? '' : '&order=' . $order;
-    $params .= empty($query) ? '' : '&query=' . $query;
+    $params .= empty($query) ? '' : '&query=' . urlencode($query);
 
-    $url = $this->micaUrl . '/' . (empty($resource) ? 'dataset' : $resource) . '/' . rawurlencode($dataset_id) . '/variables?' . $params;
+    $url = $this->micaUrl . '/' . (empty($resource) ? 'dataset' : $resource) . '/' . rawurlencode($dataset_id) . '/variables' . (empty($query) ? '' : '/_search') . '?' . $params;
+
     $request = new HttpClientRequest($url, array(
       'method' => HttpClientRequest::METHOD_GET,
       'headers' => $this->authorizationHeader(array(
@@ -135,6 +137,60 @@ class MicaDatasetResource extends MicaClient {
       }
       $dtoObj = '\obiba\mica\DatasetVariablesDto';
       return $data ? Protobuf::decode($dtoObj, $data) : NULL;
+    }
+    catch (HttpClientException $e) {
+      return array();
+    }
+  }
+
+  public function cross_variables($resource, $dataset_id, $variable1, $variable2) {
+    $this->setLastResponse(NULL);
+    $params = empty($variable2) ? '' : 'by=' . $variable2;
+    $url = $this->micaUrl . '/' . (empty($resource) ? 'dataset' : $resource) . '/' . rawurlencode($dataset_id) . '/variable/' . (empty($variable1) ? '' : $variable1) . '/contingency?' . $params;
+
+    $request = new HttpClientRequest($url, array(
+      'method' => HttpClientRequest::METHOD_GET,
+      'headers' => $this->authorizationHeader(array(
+          'Accept' => array(parent::HEADER_JSON),
+        )
+      ),
+    ));
+    $client = $this->client();
+    try {
+      $data = $client->execute($request);
+
+      $this->setLastResponse($client->lastResponse);
+      if (!empty($detail)) {
+        return json_decode($data);
+      }
+      $dtoObj = ($resource == 'study-dataset') ? '\obiba\mica\DatasetVariableContingencyDto' : '\obiba\mica\DatasetVariableContingenciesDto';
+      return $data ? Protobuf::decode($dtoObj, $data) : NULL;
+    }
+    catch (HttpClientException $e) {
+      return array();
+    }
+  }
+
+
+  public function download_cross_variables($resource, $dataset_id, $variable1, $variable2, $doc_type) {
+    $this->setLastResponse(NULL);
+    $params = empty($variable2) ? '' : 'by=' . $variable2;
+    $url = $this->micaUrl . '/' . (empty($resource) ? 'dataset' : $resource) . '/' . rawurlencode($dataset_id)
+      . '/variable/' . (empty($variable1) ? '' : $variable1) . '/contingency/_export?' . $params;
+
+    $request = new HttpClientRequest($url, array(
+      'method' => HttpClientRequest::METHOD_GET,
+      'headers' => $this->authorizationHeader(
+        $doc_type === 'csv'
+          ? array('Accept' => array(parent::HEADER_CSV))
+          : array('Accept' => array(parent::HEADER_EXCEL_SHEET))
+      ),
+    ));
+    $client = $this->client();
+    try {
+      $client->execute($request);
+      $this->setLastResponse($client->lastResponse);
+      return $client->lastResponse;
     }
     catch (HttpClientException $e) {
       return array();

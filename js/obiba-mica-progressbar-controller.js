@@ -15,13 +15,17 @@
   });
 
   $(document).ready(function () {
-    if (!hasAjax) $.ObibaProgressBarController().finish();
+    if (!hasAjax){
+      $.ObibaProgressBarController().finish();
+    }
     ready = true;
   });
 
   $(document).ajaxStart(function () {
     hasAjax = true;
-    if (ready) $.ObibaProgressBarController().start();
+    if (ready){
+      $.ObibaProgressBarController().start();
+    }
   });
 
   $(document).ajaxSend(function () {

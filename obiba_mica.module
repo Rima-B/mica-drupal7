@@ -11,16 +11,63 @@
 function obiba_mica_menu() {
   $items = array();
 
-  $items['admin/config/system/obiba'] = array(
-    'title' => 'OBiBa Mica settings',
+  $items['admin/config/obiba-mica'] = array(
+    'title' => 'OBiBa Mica',
+    'description' => 'Configure Mica',
+    'weight' => -100,
+    'page callback' => 'system_admin_menu_block_page',
+    'access arguments' => array('access administration pages'),
+    'file' => 'system.admin.inc',
+    'file path' => drupal_get_path('module', 'system'),
+    'position' => 'right',
+  );
+
+  $items['admin/config/obiba-mica/obiba-mica-settings'] = array(
+    'title' => 'Settings',
     'description' => 'Configure Mica services',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('obiba_mica_admin_settings'),
-    'access arguments' => array('administer obiba'),
+    'access arguments' => array('administer obiba mica'),
     'type' => MENU_NORMAL_ITEM,
     'file' => 'obiba_mica.admin.inc',
+    'weight' => 0,
+  );
+
+  $items['admin/config/obiba-mica/obiba-search-pages-settings'] = array(
+    'title' => 'Search pages settings',
+    'description' => 'Configure search pages',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('obiba_mica_search_pages_admin_settings'),
+    'access arguments' => array('administer obiba mica'),
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'obiba_mica_search_pages.admin.inc',
+    'weight' => 1,
+  );
+
+  $items['admin/config/obiba-mica/obiba-content-pages-settings'] = array(
+    'title' => 'Content pages settings',
+    'description' => 'Configure the catalogues content pages',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('obiba_mica_content_pages_admin_settings'),
+    'access arguments' => array('administer obiba mica'),
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'obiba_mica_content_pages.admin.inc',
+    'weight' => 1,
   );
   return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function obiba_mica_permission() {
+  return array(
+    'administer obiba mica' => array(
+      'title' => t('Administer OBiBa Mica'),
+      'description' => t('Configure OBiBa Mica server and other settings.'),
+      'restrict access' => TRUE,
+    ),
+  );
 }
 
 /**
@@ -40,7 +87,7 @@ function obiba_mica_theme_registry_alter(&$theme_registry) {
         $theme_study_detail = array(
           'template' => $template,
           'path' => $module_path . '/templates',
-          'theme path' => $module_path
+          'theme path' => $module_path,
         );
         $result = array_merge($theme_registry[$registry_key_template], $theme_study_detail);
         $theme_registry[$registry_key_template] = $result;
@@ -57,17 +104,19 @@ function obiba_mica_chart_definition_alter(&$definition, $chart, $chart_id) {
   if (!empty($chart['#raw_options'])) {
     $definition = obiba_mica_drupal_array_merge_deep_array(array(
       $definition,
-      array('options' => $chart['#raw_options'])
+      array('options' => $chart['#raw_options']),
     ));
   }
 }
 
 /**
- * Override drupal_array_merge_deep_array
+ * Override drupal_array_merge_deep_array.
  *
- * @param $arrays
+ * @param array $arrays
+ *   The arrays to merge.
  *
  * @return array
+ *   The merged array.
  */
 function obiba_mica_drupal_array_merge_deep_array($arrays) {
   $result = array();
@@ -80,7 +129,7 @@ function obiba_mica_drupal_array_merge_deep_array($arrays) {
       if (isset($result[$key]) && is_array($result[$key]) && is_array($value)) {
         $result[$key] = obiba_mica_drupal_array_merge_deep_array(array(
           $result[$key],
-          $value
+          $value,
         ));
       }
       // Otherwise, use the latter value, overriding any previous value.
@@ -93,6 +142,9 @@ function obiba_mica_drupal_array_merge_deep_array($arrays) {
   return $result;
 }
 
+/**
+ * Implements hook_user_view().
+ */
 function obiba_mica_user_view($account, $view_mode, $langcode) {
   // Set the page title of the user profile page to the user's full name.
   $wrapper = entity_metadata_wrapper('user', $account);
@@ -103,67 +155,73 @@ function obiba_mica_user_view($account, $view_mode, $langcode) {
     }
   }
   catch (Exception $e) {
-
   }
 
 }
 
 /**
- * Adds the obiba progressbar JS file
- * @param $javascript
+ * Implements hook_js_alter().
+ *
+ * Adds the obiba progressbar JS file.
  */
 function obiba_mica_js_alter(&$javascript) {
-  $js_file = _get_progressbar_path('.js');
+  $js_file = obiba_mica_get_progressbar_path('.js');
   if (!empty($js_file)) {
     $javascript[$js_file] = drupal_js_defaults($js_file);
   }
   $current_module_path = drupal_get_path('module', 'obiba_mica');
-  //check we want to disable languge for some pages (By path)
-  $translatable = variable_get_value('mica_disable_translation');
-  if (!empty($translatable)) {
+  // Check we want to disable language for some pages (By path).
+  $translatable_path = variable_get_value('mica_disabled_path_translation');
+  if (!empty($translatable_path)) {
     global $language;
     if ($language->provider !== 'language-default') {
-      //retrieve the paths list of  not translatable page
-      $translatable_path = variable_get_value('mica_disabled_path_translation');
+      // Retrieve the paths list of  not translatable page.
       $paths = explode(',', $translatable_path);
       drupal_add_js($current_module_path . '/js/obiba-mica-translatable_redirect.js');
       drupal_add_js(array(
         'obiba_mica' => array(
           'paths' => $paths,
-          'currentLang' => $language->language . '/'
-        )
+          'currentLang' => $language->language . '/',
+        ),
       ), 'setting');
     }
   }
 }
 
 /**
- * Adds the obiba progressbar reltated CSS file
- * @param $javascript
+ * Implements hook_js_alter().
+ *
+ * Adds the obiba progressbar related CSS file.
  */
 function obiba_mica_css_alter(&$css) {
-  $css_file = _get_progressbar_path('.css');
+  $css_file = obiba_mica_get_progressbar_path('.css');
   if (!empty($css_file)) {
     $css = drupal_add_css($css_file, array('every_page' => TRUE));
   }
 }
 
 /**
- * Helper assembling the resource files setup in the Makefile
- * @param $extension
+ * Helper assembling the resource files setup in the Makefile.
+ *
+ * @param string $extension
+ *   The extension of the file to get.
+ *
  * @return null|string
+ *   The path.
  */
-function _get_progressbar_path($extension) {
+function obiba_mica_get_progressbar_path($extension) {
   $obiba_progressbar_lib = libraries_get_path(variable_get_value('obiba-progressbar-lib'));
   $obiba_progressbar_file = variable_get_value('obiba-progressbar-file');
-  return empty($extension) || empty($obiba_progressbar_lib) || empty($obiba_progressbar_file)
-    ? NULL
-    : $obiba_progressbar_lib . '/' . $obiba_progressbar_file . $extension;
+  return empty($extension)
+  || empty($obiba_progressbar_lib)
+  || empty($obiba_progressbar_file) ? NULL :
+    $obiba_progressbar_lib . '/' . $obiba_progressbar_file . $extension;
 }
 
 /**
+ * Implements hook_form_FORM_ID_alter().
+ *
  * Increase the length of the slogan.
- * Implements hook_form_FORM_ID_alter.
  */
 function obiba_mica_form_system_site_information_settings_alter(&$form, &$form_state, $form_id) {
   $form['site_information']['site_slogan']['#maxlength'] = 500;

@@ -1,27 +1,21 @@
 <?php
 
-/*
- * @file  code for obiba_mica_commons module
- * */
-
 /**
- * Converts a string to a slug, for use in URLs or CSS classes. This function properly replaces
- *  letters with accents with their non-accented counterparts.
- *
- * @param string The string to convert.
- * @return string The slug.
+ * @file
+ * Code for obiba_mica_commons module.
  */
+
 $path_module_protobuf = drupal_get_path('module', 'obiba_protobuf');
 $path_module_protos = drupal_get_path('module', 'obiba_mica_model');
 
-include_once($path_module_protobuf . '/protobuf/Protobuf.php');
+include_once $path_module_protobuf . '/protobuf/Protobuf.php';
 use \DrSlump\Protobuf;
 
 Protobuf::autoload();
 
 const HEADER_BINARY = 'application/x-protobuf';
 const HEADER_JSON = 'application/json';
-include_once($path_module_protos . '/protos/Mica.php');
+include_once $path_module_protos . '/protos/Mica.php';
 
 /**
  * Implements hook_user_logout().
@@ -38,20 +32,22 @@ function obiba_mica_commons_user_login() {
   MicaClient::clear();
 }
 
+/**
+ * Implements hook_menu().
+ */
 function obiba_mica_commons_menu() {
   $items = array();
 
   $items['mica/get_fixed_sidebar/%'] = array(
     'page callback' => 'obiba_mica_commons_fixed_sidebar',
     'access callback' => TRUE,
-    'page arguments' => array(2)
+    'page arguments' => array(2),
   );
 
   $items['download/%/%/%'] = array(
-    //'title' => t('AutoComp Menu'),
     'page callback' => 'obiba_mica_commons_download_attachment',
     'access callback' => TRUE,
-    'page arguments' => array(1, 2, 3)
+    'page arguments' => array(1, 2, 3),
   );
 
   $items['mica/datatable-international'] = array(
@@ -64,6 +60,9 @@ function obiba_mica_commons_menu() {
   return $items;
 }
 
+/**
+ * Implements hook_library_alter().
+ */
 function obiba_mica_commons_library_alter(&$libraries, $module) {
 
   $charts_info = variable_get('charts_default_settings');
@@ -94,17 +93,31 @@ function obiba_mica_commons_library_alter(&$libraries, $module) {
   }
 }
 
+/**
+ * Construct the fixed sidebar.
+ *
+ * @param string $template
+ *   The template to render the fixed sidebar.
+ */
 function obiba_mica_commons_fixed_sidebar($template) {
   $output['fixed_menu'] = theme($template, $_SESSION['fixed_menu']);
   drupal_json_output($output);
 }
 
+/**
+ * Download the attachments.
+ *
+ * @param string $entity_type
+ *   The entity type containing attachments.
+ * @param string $entity_id
+ *   The entity id.
+ * @param string $file_resource_id
+ *   The file resource id.
+ */
 function obiba_mica_commons_download_attachment($entity_type, $entity_id, $file_resource_id) {
   if (!empty($file_resource_id)) {
-    $mica_url = (isset($mica_url) ? $mica_url : variable_get_value('mica_url')) . '/ws';
-    $url = $mica_url . "/" . $entity_type . "/" . $entity_id . "/file/" . $file_resource_id . "/_download";
     $mica_client = new MicaClient();
-    $raw_data = $mica_client->download_file($entity_type, $entity_id, $file_resource_id);
+    $raw_data = $mica_client->downloadFile($entity_type, $entity_id, $file_resource_id);
 
     if (!empty($raw_data) && empty($raw_data['code'])) {
       drupal_add_http_header('Content-Type', $raw_data['raw_header_array']['Content-Type']);
@@ -114,11 +127,10 @@ function obiba_mica_commons_download_attachment($entity_type, $entity_id, $file_
       exit;
     }
     else {
-      // dpm(drupal_get_destination());
       drupal_set_message(t('An error occurred downloading file, server response code : @code, Server message: "@message"',
         array(
           '@code' => $raw_data['code'],
-          '@message' => $raw_data['message']
+          '@message' => $raw_data['message'],
         )
       ),
         'error');
@@ -129,17 +141,24 @@ function obiba_mica_commons_download_attachment($entity_type, $entity_id, $file_
 }
 
 /**
- * @param $std The object with localized fields
- * @param $field The localized field
- * @param $lang
- * @return the localized value for this field, with this priority order: $lang, $language->language, 'en' or the first other locale found
+ * Get localized field value from response server.
+ *
+ * @param object $std
+ *   The object with localized fields.
+ * @param string $field
+ *   The localized field to translate.
+ * @param string $lang
+ *   The language translations.
+ *
+ * @return string
+ *   The localized value for this field, with this priority order: $lang,
+ *   $language->language, 'en' or the first other locale found.
  */
 function obiba_mica_commons_get_localized_field($std, $field, $lang = NULL) {
   global $language;
   if (empty($lang)) {
     $lang = $language->language;
   }
-  //  $lang='fr';//dpm($std);
   $value = NULL;
   if (!empty($std->{$field})) {
     foreach ($std->{$field} as $field_value) {
@@ -170,44 +189,42 @@ function obiba_mica_commons_get_localized_field($std, $field, $lang = NULL) {
   return $value;
 }
 
-/*
- * Multi language Datatables  support
- * */
+/**
+ * Multi language Datatables  support.
+ */
 function obiba_mica_commons_datatables_multi_Lang() {
-  $_lang_translation = array(
+  drupal_json_output(array(
     "sEmptyTable" => t("No data available in table"),
     "sInfo" => t("Showing @start to @end of @total entries", array(
       "@start" => "_START_",
       "@end" => "_END_",
-      "@total" => "_TOTAL_"
+      "@total" => "_TOTAL_",
     )),
     "sInfoEmpty" => t("Showing 0 to 0 of 0 entries"),
     "sInfoFiltered" => t("(filtered from @max total entries)", array("@max" => "_MAX_")),
-    "sInfoPostFix" => t(""),
+    "sInfoPostFix" => '',
     "sInfoThousands" => t(","),
     "sLengthMenu" => t("Show @menu entries", array("@menu" => "_MENU_")),
     "sLoadingRecords" => t("Loading..."),
     "sProcessing" => t("Processing..."),
-    "sSearch" => t("Search: "),
+    "sSearch" => t("Search :"),
     "sZeroRecords" => t("No matching records found"),
     "oPaginate" => array(
       "sFirst" => t("First"),
       "sLast" => t("Last"),
       "sNext" => t("Next"),
-      "sPrevious" => t("Previous")
+      "sPrevious" => t("Previous"),
     ),
     "oAria" => array(
       "sSortAscending" => t(": activate to sort column ascending"),
-      "sSortDescending" => t(": activate to sort column descending")
-    )
-  );
-
-  return drupal_json_output($_lang_translation);
+      "sSortDescending" => t(": activate to sort column descending"),
+    ),
+  ));
 }
 
-/*
- * Add external js dataTables
- * */
+/**
+ * Add external js dataTables.
+ */
 function obiba_mica_commons_datatables_external_source() {
   drupal_add_js('http://cdn.datatables.net/1.10.4/js/jquery.dataTables.min.js', 'external');
   drupal_add_js('http://cdn.datatables.net/fixedcolumns/3.0.2/js/dataTables.fixedColumns.min.js', 'external');
@@ -217,8 +234,12 @@ function obiba_mica_commons_datatables_external_source() {
 
 /**
  * Change a keyword into a readable string.
- * @param $str a string
- * @return null|string
+ *
+ * @param string $str
+ *   A given string to clear.
+ *
+ * @return string
+ *   A clear string.
  */
 function obiba_mica_commons_clean_string($str) {
   if (empty($str)) {
@@ -236,13 +257,18 @@ function obiba_mica_commons_clean_string($str) {
 }
 
 /**
- * @param $std The object with localized fields
- * @param $field The localized field
- * @param $lang
- * @return the localized value for this field, with this priority order: $lang, $language->language, 'en' or the first other locale found
+ * Get localized dto field.
+ *
+ * @param object $std
+ *   The object with localized fields.
+ * @param string $field
+ *   The localized field.
+ *
+ * @return string
+ *   The localized value for this field, with this priority order: $lang,
+ *   $language->language, 'en' or the first other locale found.
  */
-
-function obiba_mica_commons_get_localized_dtos_field($std, $field, $lang = NULL) {
+function obiba_mica_commons_get_localized_dtos_field($std, $field) {
   $value = array();
   foreach ($std->{$field} as $items) {
     $value[] = obiba_mica_commons_get_localized_field($items, 'localizedStrings');
@@ -251,9 +277,13 @@ function obiba_mica_commons_get_localized_dtos_field($std, $field, $lang = NULL)
 }
 
 /**
- * @param $limit
+ * Wrap no limit value to literal output.
  *
- * @return text 'no limit' fin $limit is Null
+ * @param bool $limit
+ *   False/True field.
+ *
+ * @return string
+ *   Text 'no limit' if $limit is not Null.
  */
 function obiba_mica_commons_get_if_no_limit($limit) {
   if (!empty($limit)) {
@@ -262,9 +292,13 @@ function obiba_mica_commons_get_if_no_limit($limit) {
 }
 
 /**
- * @param $iso_countries
- * @return CamelCase Country name
+ * Get name from country code.
  *
+ * @param object $iso_countries
+ *   The country in iso3 format.
+ *
+ * @return string
+ *   CamelCase Country name.
  */
 function obiba_mica_commons_countries($iso_countries) {
   ob_start();
@@ -273,11 +307,16 @@ function obiba_mica_commons_countries($iso_countries) {
 }
 
 /**
+ * An iteration field helper.
  *
- * @param $fields
- * @param null $callback
- * @param null $parameters
- * @param null $method
+ * @param object $fields
+ *   Fields to iterate.
+ * @param string $callback
+ *   Function to use on iteration.
+ * @param string $parameters
+ *   A set of parameters.
+ * @param string $method
+ *   The method to use to get field.
  */
 function obiba_mica_commons_iterate_field($fields, $callback = NULL, $parameters = NULL, $method = NULL) {
   $i = 0;
@@ -285,16 +324,16 @@ function obiba_mica_commons_iterate_field($fields, $callback = NULL, $parameters
   foreach ($fields as $field) {
     if (!empty($callback)) {
       if (empty($parameters)) {
-        print   call_user_func($callback, $field);
+        print call_user_func($callback, $field);
       }
       elseif (empty($method)) {
-        print   call_user_func_array($callback, array($field, $parameters));
+        print call_user_func_array($callback, array($field, $parameters));
       }
       else {
         try {
           $user_func = call_user_func_array($callback, array(
             $field,
-            $parameters
+            $parameters,
           ));
           if (!empty($user_func->{$method})) {
             print t($user_func->{$method});
@@ -304,11 +343,11 @@ function obiba_mica_commons_iterate_field($fields, $callback = NULL, $parameters
           }
         }
         catch (Exception $e) {
-          dpm($e->getMessage());
+          /*dpm($e->getMessage());
           dpm($callback);
           dpm($field);
           dpm($parameters);
-          dpm($method);
+          dpm($method);*/
           print $field;
         }
       }
@@ -325,7 +364,13 @@ function obiba_mica_commons_iterate_field($fields, $callback = NULL, $parameters
 
 }
 
-function _obiba_mica_commons_normalize_rows(&$dce_rows) {
+/**
+ * Normalize date start/end in dce.
+ *
+ * @param array $dce_rows
+ *   The set of given dce.
+ */
+function obiba_mica_commons_normalize_rows(&$dce_rows) {
   foreach ($dce_rows as &$dce_row) {
     $dce_row['data']['start'] = obiba_mica_commons_format_year($dce_row['data']['start_year'], $dce_row['data']['start_month']);
     $dce_row['data']['end'] = obiba_mica_commons_format_year($dce_row['data']['end_year'], $dce_row['data']['end_month']);
@@ -337,15 +382,46 @@ function _obiba_mica_commons_normalize_rows(&$dce_rows) {
   }
 }
 
+/**
+ * GEt month name for a given date.
+ *
+ * @param int $month
+ *   Number format of month.
+ *
+ * @return string
+ *   Literal format of a month.
+ */
 function obiba_mica_commons_get_month_name($month) {
   global $language;
   return format_date(mktime(0, 0, 0, $month, 1, 2013), 'custom', 'F', NULL, $language->language);
 }
 
+/**
+ * Get number of month in given number of year.
+ *
+ * @param int $year
+ *   Number of years.
+ * @param int $month
+ *   Number of month.
+ *
+ * @return int
+ *   period on month number.
+ */
 function obiba_mica_commons_convert_to_month($year, $month) {
   return $year * 12 + $month;
 }
 
+/**
+ * Format year.
+ *
+ * @param int $year
+ *   the year date.
+ * @param int $month
+ *   The month date.
+ *
+ * @return string
+ *   Literal format of a given date.
+ */
 function obiba_mica_commons_format_year($year, $month) {
   if (empty($year)) {
     return '';
@@ -353,6 +429,21 @@ function obiba_mica_commons_format_year($year, $month) {
   return empty($month) ? "$year" : "$year (" . obiba_mica_commons_get_month_name($month) . ")";
 }
 
+/**
+ * Helper to add page node.
+ *
+ * @param string $title
+ *   The title of the page.
+ * @param string $body_html
+ *   The content body of the page.
+ * @param string $alias
+ *   The alias path of the page.
+ * @param string $format
+ *   Format of the body content.
+ *
+ * @return object
+ *   The created entity wrapper of the created page.
+ */
 function obiba_mica_commons_add_page($title, $body_html, $alias = NULL, $format = 'full_html') {
 
   $page_wrapper = entity_property_values_create_entity(
@@ -381,31 +472,32 @@ function obiba_mica_commons_add_page($title, $body_html, $alias = NULL, $format 
 }
 
 /**
- * Check if current theme is based on Twitter Bootstrap
+ * Get the current theme name.
+ *
+ * @return string
+ *   The current theme name.
  */
-function obiba_mica_commons_is_bootstrap_based_theme() {
-  // cannot use module_invoke_all() because hook are invoked only for modules
-  $current_theme = obiba_mica_commons_get_current_theme();
-  $function = $current_theme . '_bootstrap_based_theme';
-  if (function_exists($function)) {
-    $result = call_user_func_array($function, array());
-    return !empty($result) && is_array($result) && isset($result[$current_theme]) ? $result[$current_theme] : FALSE;
-  }
-  return FALSE;
-}
-
 function obiba_mica_commons_get_current_theme() {
-  global $custom_theme, $theme, $user;
-
+  global $theme, $user;
   if (!empty($user->theme)) {
     return $user->theme;
-  }
-  if (!empty($custom_theme)) {
-    return $custom_theme;
   }
   return $theme ? $theme : 'obiba_bootstrap';
 }
 
+/**
+ * Create a search form in list pages (Study list, network list...).
+ *
+ * @param array $context
+ *   An array of options and context.
+ * @param bool $no_acronym
+ *   Sorting by acronym options.
+ * @param bool $no_name
+ *   Sorting by name options
+ *
+ * @return array
+ *   Drupal markup form.
+ */
 function obiba_mica_commons_create_search_form($context, $no_acronym = TRUE, $no_name = TRUE) {
   global $language;
   if ($no_name) {
@@ -415,31 +507,34 @@ function obiba_mica_commons_create_search_form($context, $no_acronym = TRUE, $no
     $sort_acronym = 'acronym.' . $language->language;
     $options = array_merge(array(
       $sort_name => t('Name'),
-      $sort_acronym => t('Acronym')
+      $sort_acronym => t('Acronym'),
     ), $context['options']);
   }
   else {
     $options = array_merge(array($sort_name => t('Name')), $context['options']);
   }
 
-  $default_sort = empty($_GET['search-sort'])
-    ? empty($context['default_sort']) ? NULL : $context['default_sort']
-    : $_GET['search-sort'];
+  $default_sort = empty($_GET['search-sort']) ?
+    empty($context['default_sort']) ? NULL : $context['default_sort'] :
+    $_GET['search-sort'];
 
-  $default_sort_order = empty($_GET['search-sort-order'])
-    ? empty($context['default_sort_order']) ? NULL : $context['default_sort_order']
-    : $_GET['search-sort-order'];
+  $default_sort_order = empty($_GET['search-sort-order']) ?
+    empty($context['default_sort_order']) ? NULL :
+      $context['default_sort_order'] : $_GET['search-sort-order'];
 
   $form = array();
   $form['#id'] = 'obiba-mica-search-form';
   $form['#method'] = 'get';
-  if (isset($_GET['search-sort']) || isset($_GET['search-sort-order']) || isset($_GET['search-query'])) {
+  if (isset($_GET['search-sort']) ||
+    isset($_GET['search-sort-order']) ||
+    isset($_GET['search-query'])
+  ) {
     $form['button'] = array(
       '#type' => 'button',
       '#value' => '<i class="flaticon-undo9"></i>',
       '#attributes' => array(
         'class' => array('btn-default rounded'),
-        'id' => array('refresh-button')
+        'id' => array('refresh-button'),
       ),
     );
   }
@@ -475,10 +570,19 @@ function obiba_mica_commons_create_search_form($context, $no_acronym = TRUE, $no
   return $form;
 }
 
+/**
+ * Create a size select form.
+ *
+ * @param array $context
+ *   An array of options and context.
+ *
+ * @return array
+ *   Drupal markup form.
+ */
 function obiba_mica_commons_create_size_select_form($context) {
   $default_size_parameter = MicaClient::getResponsePageSize();
-  $default_size = !empty($default_size_parameter)
-    ? $default_size_parameter : $context['options'];
+  $default_size = !empty($default_size_parameter) ?
+    $default_size_parameter : $context['options'];
   $form = array();
   $form['#id'] = 'obiba-mica-size-select-form';
   $form['#method'] = 'get';
@@ -491,12 +595,29 @@ function obiba_mica_commons_create_size_select_form($context) {
     '#default_value' => $default_size,
     '#attributes' => array(
       'id' => 'edit-size',
-    )
+    ),
   );
 
   return $form;
 }
 
+/**
+ * Safe expose hosted mica server images.
+ *
+ * By save the image in tmp and expose an cached image resource.
+ *
+ * @param string $entity_id
+ *   The entity id.
+ * @param object $file_resource
+ *   The file resource.
+ * @param string $entity_type
+ *   the entity type.
+ * @param bool $link_to
+ *   Disable/enable link to image.
+ *
+ * @return string
+ *   The url of image.
+ */
 function obiba_mica_commons_safe_expose_server_url($entity_id, $file_resource, $entity_type, $link_to = FALSE) {
 
   if ($link_to) {
@@ -506,7 +627,8 @@ function obiba_mica_commons_safe_expose_server_url($entity_id, $file_resource, $
   }
   $attached_resource = &drupal_static(__FUNCTION__);
   if (!isset($attached_resource)) {
-    $cached_attached_resources = cache_get('images-cache-' . $entity_id . '-' . $file_resource->id);
+    $cached_attached_resources = cache_get('images-cache-' . $entity_id . '-' .
+      $file_resource->id);
 
     if (!empty($cached_attached_resources)) {
       return $cached_attached_resources->data;
@@ -514,22 +636,25 @@ function obiba_mica_commons_safe_expose_server_url($entity_id, $file_resource, $
     else {
       if (!empty($file_resource)) {
         $mica_client = new MicaClient();
-        $raw_data = $mica_client->download_file($entity_type, $entity_id, $file_resource->id);
+        $raw_data = $mica_client->downloadFile($entity_type, $entity_id,
+          $file_resource->id);
         if (!empty($raw_data) && empty($raw_data['code'])) {
           $extension_file = $raw_data['extension'];
-          $file = file_unmanaged_save_data($raw_data['data'], 'public://tmp' . $file_resource->id . '.' . $extension_file, FILE_EXISTS_REPLACE);
+          $file = file_unmanaged_save_data($raw_data['data'], 'public://tmp' .
+            $file_resource->id . '.' . $extension_file, FILE_EXISTS_REPLACE);
           $exposed_url = file_create_url($file);
-          //Time out in second
+          // Time out in second.
           $time_out = variable_get_value('image_cache_time_out') * 60;
-          cache_set('images-cache-' . $entity_id . '-' . $file_resource->id, $exposed_url, 'cache', time() + $time_out);
+          cache_set('images-cache-' . $entity_id . '-' . $file_resource->id,
+            $exposed_url, 'cache', time() + $time_out);
           return $exposed_url;
         }
         else {
-          // dpm(drupal_get_destination());
-          drupal_set_message(t('An error occurred downloading images , server response code : @code, Server message: "@message"',
+          drupal_set_message(t('An error occurred downloading images , server
+          response code : @code, Server message: "@message"',
             array(
               '@code' => $raw_data['code'],
-              '@message' => $raw_data['message']
+              '@message' => $raw_data['message'],
             )
           ),
             'error');
@@ -542,9 +667,13 @@ function obiba_mica_commons_safe_expose_server_url($entity_id, $file_resource, $
 }
 
 /**
- * Transform a markdown text into html and wrap it in a div with 'markdown' class.
- * @param $text
+ * Transform a markdown text into html and wrap it in a div with markdown class.
+ *
+ * @param string $text
+ *   Markdown format text.
+ *
  * @return string
+ *   Html format text.
  */
 function obiba_mica_commons_markdown($text) {
   if (!empty($text)) {
@@ -555,10 +684,27 @@ function obiba_mica_commons_markdown($text) {
   return $text;
 }
 
+/**
+ * Check if current request is an ajax one.
+ *
+ * @return bool
+ *   TRUE/FALSE statement.
+ */
 function obiba_mica_commons_is_ajax() {
   return !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
 }
 
+/**
+ * Format number by current selected page.
+ *
+ * @param int $number
+ *   The number to format.
+ * @param int $nbr_decimals
+ *   The number of decimal.
+ *
+ * @return string
+ *   The formatted number.
+ */
 function obiba_mica_commons_format_number($number, $nbr_decimals = 0) {
   global $language;
   switch ($language->language) {
@@ -569,7 +715,8 @@ function obiba_mica_commons_format_number($number, $nbr_decimals = 0) {
       else {
         return $number;
       }
-    default :
+
+    default:
       if (is_float($number)) {
         return number_format($number, $nbr_decimals, '.', ',');
       }
@@ -579,6 +726,15 @@ function obiba_mica_commons_format_number($number, $nbr_decimals = 0) {
   }
 }
 
+/**
+ * GEt translated node.
+ *
+ * @param int $nid
+ *   The id of the node.
+ *
+ * @return array
+ *   The node on an drupal markup array.
+ */
 function obiba_mica_commons_get_translated_node($nid) {
   $loaded_node = (node_load($nid));
   if (!empty($loaded_node)) {
@@ -595,6 +751,12 @@ function obiba_mica_commons_get_translated_node($nid) {
   return FALSE;
 }
 
+/**
+ * Helper to check if current user is an authorized Agete user.
+ *
+ * @return bool
+ *   TRUE/FALSE statment.
+ */
 function obiba_mica_commons_is_authorized_agate_user() {
   global $user;
 

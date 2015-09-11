@@ -22,7 +22,6 @@
   Drupal.behaviors.obiba_mica_data_access_request = {
     attach: function (context, settings) {
 
-
       mica.DataAccessRequest = angular.module('mica.DataAccessRequest', [
         'ui.bootstrap',
         'obiba.notification',
@@ -34,7 +33,6 @@
         'pascalprecht.translate',
         'angularMoment'
       ]);
-
 
     }
   }

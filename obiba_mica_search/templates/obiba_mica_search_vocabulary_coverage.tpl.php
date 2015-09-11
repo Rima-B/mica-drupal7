@@ -44,7 +44,7 @@
           vertical-align: top;
           width: <?php print 100 / (count($all_buckets) + 1) ?>%;">
           <?php
-          print MicaClientAnchorHelper::ajax_friendly_anchor(
+          print MicaClientAnchorHelper::ajaxFriendlyAnchor(
             MicaClientPathProvider::SEARCH,
             isset($bucket->title) ?
               ($group_by == 'dceIds' ?
@@ -58,7 +58,7 @@
             ),
             array(
               'type' => 'variables',
-              'query' => MicaClient::add_parameter_dto_query_link(array(
+              'query' => MicaClient::addParameterDtoQueryLink(array(
                   $bucket_type => array(
                     'terms' => array(
                       $bucket->field => $bucket->value
@@ -78,13 +78,13 @@
     <th class="right-border"><?php print t('Total'); ?></th>
     <th style="text-align: center;">
       <?php
-      print MicaClientAnchorHelper::ajax_friendly_anchor(
+      print MicaClientAnchorHelper::ajaxFriendlyAnchor(
         MicaClientPathProvider::SEARCH,
         $vocabulary_coverage->hits,
         array(),
         array(
           'type' => 'variables',
-          'query' => MicaClient::add_parameter_dto_query_link(array(
+          'query' => MicaClient::addParameterDtoQueryLink(array(
               'variables' => array(
                 'terms' => array(
                   $vocabulary_attribute => $term_names,
@@ -104,13 +104,13 @@
             print 0;
           }
           else {
-            print MicaClientAnchorHelper::ajax_friendly_anchor(
+            print MicaClientAnchorHelper::ajaxFriendlyAnchor(
               MicaClientPathProvider::SEARCH,
               $bucket->hits,
               array(),
               array(
                 'type' => 'variables',
-                'query' => MicaClient::add_parameter_dto_query_link(array_merge_recursive(
+                'query' => MicaClient::addParameterDtoQueryLink(array_merge_recursive(
                       array(
                         $bucket_type => array(
                           'terms' => array(
@@ -147,13 +147,13 @@
             <?php print obiba_mica_commons_get_localized_field($term_coverage->term, 'titles'); ?>
           <?php else: ?>
             <?php
-            print MicaClientAnchorHelper::ajax_friendly_anchor(
+            print MicaClientAnchorHelper::ajaxFriendlyAnchor(
               MicaClientPathProvider::SEARCH,
               obiba_mica_commons_get_localized_field($term_coverage->term, 'titles'),
               array(),
               array(
                 'type' => 'variables',
-                'query' => MicaClient::add_parameter_dto_query_link(array(
+                'query' => MicaClient::addParameterDtoQueryLink(array(
                     'variables' => array(
                       'terms' => array(
                         $vocabulary_attribute => $term_coverage->term->name
@@ -181,13 +181,13 @@
                   <?php print 0; ?>
               <?php else: ?>
                 <span class="label label-info">
-                  <?php print MicaClientAnchorHelper::ajax_friendly_anchor(
+                  <?php print MicaClientAnchorHelper::ajaxFriendlyAnchor(
                     MicaClientPathProvider::SEARCH,
                     $bucket->hits,
                     array(),
                     array(
                       'type' => 'variables',
-                      'query' => MicaClient::add_parameter_dto_query_link(array_merge_recursive(
+                      'query' => MicaClient::addParameterDtoQueryLink(array_merge_recursive(
                             array(
                               $bucket_type => array(
                                 'terms' => array(

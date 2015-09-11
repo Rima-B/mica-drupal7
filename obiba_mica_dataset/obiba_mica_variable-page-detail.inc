@@ -142,29 +142,6 @@ function obiba_mica_variable_load_chart_libraries() {
   return 'google';
 }
 
-function obiba_mica_variable_prepare_prettify() {
-  static $paths = array();
-  if (obiba_mica_commons_is_bootstrap_based_theme()) {
-    $dir = drupal_get_path('theme', obiba_mica_commons_get_current_theme());
-    $paths['css'] = $dir . '/css/prettify.css';
-    $paths['js'] = $dir . '/js/prettify.js';
-  }
-  if (isset($paths['css'])) {
-    drupal_add_css($paths['css']);
-  }
-  else {
-    throw new Exception('prettify.css library not found!');
-  }
-
-  if (isset($paths['js'])) {
-    drupal_add_js($paths['js']);
-  }
-  else {
-    throw new Exception('prettify.js library not found!');
-  }
-  drupal_add_js(drupal_get_path('module', 'obiba_mica_dataset') . '/js/obiba_mica_prettify.js', 'file');
-}
-
 function obiba_mica_variable_get_harmonizations($variable) {
   if (drupal_get_library('obiba_mica_dataset', 'datatables')) {
     drupal_add_library('obiba_mica_dataset', 'datatables');
@@ -221,7 +198,7 @@ function obiba_mica_variable_get_harmonization_table_rows($variable) {
         $status = '<span class="glyphicon glyphicon-ok alert-success" title="' . t('Complete') . '"></span>';
       }
       elseif ($status == 'impossible') {
-        $status = '<span class="glyphicon ' . ObibaDatasetConstants::get_icon() . '" title="' . t(variable_get('dataset_harmonization_impossible_label')) . '"></span>';
+        $status = '<span class="glyphicon ' . ObibaDatasetConstants::getIcon() . '" title="' . t(variable_get('dataset_harmonization_impossible_label')) . '"></span>';
       }
       elseif ($status == 'undetermined') {
         $status = '<span class="glyphicon glyphicon-question-sign alert-warning" title="' . t('Undetermined') . '"></span>';

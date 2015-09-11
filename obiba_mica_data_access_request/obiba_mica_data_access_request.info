@@ -1,4 +1,4 @@
-name = "Data Access"
+name = "Obiba Mica Data Access"
 description = "Mica Client -- Data Access"
 package = Obiba
 core = 7.x
@@ -10,6 +10,3 @@ files[] = includes/obiba_mica_data_access_request_comments.inc
 files[] = includes/obiba_mica_data_access_request_comment.inc
 dependencies[] = http_client
 dependencies[] = obiba_agate
-
-version = 7.34-1.0-dev
-project = obiba_mica_data_access_request

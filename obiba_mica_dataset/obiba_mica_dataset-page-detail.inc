@@ -412,7 +412,7 @@ function obiba_mica_dataset_harmonizations_table_data($dataset_type_dto, $datase
               elseif ($status == 'impossible') {
 
                 $icon_danger_impossible = '<span data-toggle="tooltip" class="glyphicon ' .
-                  ObibaDatasetConstants::get_icon()
+                  ObibaDatasetConstants::getIcon()
                   . '" data-original-title="' . t(variable_get('dataset_harmonization_impossible_label')) . '"></span>';
                 $row[$key_row] = l($icon_danger_impossible, 'mica/variable/' . $harmonized_variable_id,
                   array(
@@ -457,7 +457,7 @@ function obiba_mica_dataset_harmonizations_table_data($dataset_type_dto, $datase
 
 function obiba_mica_dataset_coverage($dataset_id) {
   $coverage['charts'] = obiba_mica_search_query_charts(
-    MicaClient::add_parameter_dto_query_link(
+    MicaClient::addParameterDtoQueryLink(
       array('variables' => array('terms' => array('datasetId' => $dataset_id)))));
   if (!empty($coverage['charts'])) {
     $coverage['has_coverage'] = TRUE;
@@ -575,4 +575,56 @@ function obiba_mica_dataset_get_variables($dataset_id) {
       'terms' => array($dataset_id)
     )
   ), 0);
+}
+
+function obiba_mica_dataset_variables_search($dataset_type, $dataset_id, $query = NULL, $nature = NULL) {
+  $dataset_resource = new MicaDatasetResource();
+  $nature_query = empty($nature) ? '(nature:categorical OR nature:continuous)' : 'nature:' . $nature;
+  $query_string = empty($query) ? NULL : $query . ' AND ' . $nature_query;
+
+  $variables = $dataset_resource->get_variables($dataset_type, $dataset_id, 0, 10, NULL, NULL, $query_string);
+  drupal_json_output($variables);
+}
+
+function obiba_mica_dataset_variables_crosstab($dataset_type, $dataset_id, $variable1, $variable2) {
+  $dataset_resource = new MicaDatasetResource();
+
+  $variables = $dataset_resource->cross_variables($dataset_type, $dataset_id, $variable1, $variable2);
+  drupal_json_output($variables);
+}
+
+function obiba_mica_dataset_variables_crosstab_download_csv($dataset_type, $dataset_id, $variable1, $variable2) {
+  _obiba_mica_dataset_variables_crosstab_download('csv', $dataset_type, $dataset_id, $variable1, $variable2);
+}
+
+function obiba_mica_dataset_variables_crosstab_download_excel($dataset_type, $dataset_id, $variable1, $variable2) {
+  _obiba_mica_dataset_variables_crosstab_download('excel', $dataset_type, $dataset_id, $variable1, $variable2);
+}
+
+function _obiba_mica_dataset_variables_crosstab_download($doc_type, $dataset_type, $dataset_id, $variable1, $variable2) {
+  $dataset_resource = new MicaDatasetResource();
+
+  $response = $dataset_resource->download_cross_variables($dataset_type, $dataset_id, $variable1, $variable2, $doc_type);
+
+  if (!empty($response)) {
+    $headers = $dataset_resource->getLastResponseHeaders();
+    drupal_add_http_header('Content-Type', $headers['Content-Type'][0] . '; utf-8');
+    drupal_add_http_header('Content-Disposition', $headers['Content-Disposition'][0]);
+    ob_clean();
+    $csv_response = $response->body;
+    print $csv_response;
+    exit;
+  }
+}
+
+function obiba_mica_dataset_variable_info($variable_id) {
+  $dataset_resource = new MicaDatasetResource();
+  $variable_dto = $dataset_resource->get_variable($variable_id);
+  drupal_json_output($variable_dto);
+}
+
+function obiba_mica_dataset_info($dataset_type, $dataset_id) {
+  $dataset_resource = new MicaDatasetResource();
+  $dataset_dto = $dataset_resource->get_dataset($dataset_type, $dataset_id);
+  drupal_json_output($dataset_dto);
 }

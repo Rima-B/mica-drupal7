@@ -13,12 +13,11 @@ dependencies[] = http_client
 dependencies[] = i18n
 dependencies[] = libraries
 dependencies[] = variable
+dependencies[] = jquery_update
 dependencies[] = obiba_mica_study
 dependencies[] = obiba_mica_search
 dependencies[] = obiba_mica_dataset
 dependencies[] = obiba_mica_network
+dependencies[] = obiba_mica_app_angular
 
 scripts[] = js/obiba-mica-progressbar-controller.js
-
-version = 7.34-1.0-dev
-project = obiba_mica

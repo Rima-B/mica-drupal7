@@ -15,7 +15,7 @@
   <div class="col-md-10  col-sm-12 col-xs-12">
     <div>
       <h4>
-        <?php print MicaClientAnchorHelper::study_list_item($study); ?>
+        <?php print MicaClientAnchorHelper::studyListItem($study); ?>
       </h4>
       <hr class="no-margin">
       <p class="md-top-margin">
@@ -96,17 +96,17 @@
         ?>
         <?php if (!empty($networks) && variable_get_value('studies_column_networks')): ?>
           <span class="label label-default rounded right-indent">
-            <?php print MicaClientAnchorHelper::study_networks(t('@count ' . $network_caption, array('@count' => $networks)), $study->id) ?>
+            <?php print MicaClientAnchorHelper::studyNetworks(t('@count ' . $network_caption, array('@count' => $networks)), $study->id) ?>
           </span>
         <?php endif ?>
         <?php if (!empty($datasets) && (variable_get_value('studies_column_study_datasets') || variable_get_value('studies_column_harmonization_datasets'))): ?>
           <span class="label label-default rounded right-indent">
-            <?php print MicaClientAnchorHelper::study_datasets(t('@count ' . $dataset_caption, array('@count' => $datasets)), $study->id) ?>
+            <?php print MicaClientAnchorHelper::studyDatasets(t('@count ' . $dataset_caption, array('@count' => $datasets)), $study->id) ?>
           </span>
         <?php endif ?>
         <?php if (!empty($vars) && variable_get_value('studies_column_variables')): ?>
           <span class="label label-default rounded">
-            <?php print MicaClientAnchorHelper::study_variables(t('@count ' . $var_caption, array('@count' => $vars)), $study->id) ?>
+            <?php print MicaClientAnchorHelper::studyVariables(t('@count ' . $var_caption, array('@count' => $vars)), $study->id) ?>
           </span>
         <?php endif ?>
       </div>

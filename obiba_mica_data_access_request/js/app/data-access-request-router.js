@@ -20,20 +20,19 @@
 //              controller: 'DataAccessRequestListController'
 //            })
             .when('/new', {
-              templateUrl: Drupal.settings.basePath + 'obiba_main_app_angular/obiba_mica_data_access_request/obiba_mica_data_access_request-form-page',
+              templateUrl: Drupal.settings.basePath + 'obiba_mica_app_angular/obiba_mica_data_access_request/obiba_mica_data_access_request-form-page',
               controller: 'DataAccessRequestEditController'
             })
             .when('/edit/:id', {
-              templateUrl: Drupal.settings.basePath + 'obiba_main_app_angular/obiba_mica_data_access_request/obiba_mica_data_access_request-form-page',
+              templateUrl: Drupal.settings.basePath + 'obiba_mica_app_angular/obiba_mica_data_access_request/obiba_mica_data_access_request-form-page',
               controller: 'DataAccessRequestEditController'
             })
             .when('/view/:id', {
-              templateUrl: Drupal.settings.basePath + 'obiba_main_app_angular/obiba_mica_data_access_request/obiba_mica_data_access_request-view-page',
+              templateUrl: Drupal.settings.basePath + 'obiba_mica_app_angular/obiba_mica_data_access_request/obiba_mica_data_access_request-view-page',
               controller: 'DataAccessRequestViewController'
             });
 
         }]);
-
 
     }
   }

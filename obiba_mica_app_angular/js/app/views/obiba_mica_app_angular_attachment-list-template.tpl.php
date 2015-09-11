@@ -1,3 +1,11 @@
+<?php
+/**
+ * @file
+ * Code for the obiba_mica_app_angular modules.
+ */
+
+?>
+
 <table class="table table-striped" ng-show="attachments.length">
   <tbody>
   <tr ng-repeat="attachment in attachments">

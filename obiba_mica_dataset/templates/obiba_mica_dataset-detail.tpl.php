@@ -9,21 +9,25 @@ $description = empty($dataset_dto->description)
     <p class="md-top-margin"><?php print obiba_mica_commons_markdown($description); ?></p>
   <?php endif; ?>
 
-  <div class="btn-group pull-right md-bottom-margin">
-    <?php if (variable_get_value('mica_statistics_coverage')): ?>
-      <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-        <?php print t('Search') ?> <span class="caret"></span>
-      </button>
-      <ul class="dropdown-menu" role="menu">
-        <li><?php print MicaClientAnchorHelper::coverage_dataset($dataset_dto->id) ?></li>
-        <li><?php print MicaClientAnchorHelper::dataset_variables(NULL, $dataset_dto->id) ?></li>
-      </ul>
-    <?php
-    else:
-      print MicaClientAnchorHelper::dataset_variables(NULL, $dataset_dto->id, array('class' => 'btn btn-primary indent'));
-      ?>
-    <?php endif; ?>
+  <div class="pull-right md-bottom-margin">
+    <?php if (variable_get_value('mica_statistics')) print MicaClientAnchorHelper::datasetCrosstab($dataset_dto, TRUE) ?>
+    <div class="btn-group">
+      <?php if (variable_get_value('mica_statistics_coverage')): ?>
+        <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+          <?php print t('Search') ?> <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" role="menu">
+          <li><?php print MicaClientAnchorHelper::coverageDataset($dataset_dto->id) ?></li>
+          <li><?php print MicaClientAnchorHelper::datasetVariables(NULL, $dataset_dto->id) ?></li>
+        </ul>
+      <?php
+      else:
+        print MicaClientAnchorHelper::datasetVariables(NULL, $dataset_dto->id, array('class' => 'btn btn-primary indent'));
+        ?>
+      <?php endif; ?>
+    </div>
   </div>
+
 </div>
 
 <div class="clearfix"></div>
@@ -71,7 +75,7 @@ $description = empty($dataset_dto->description)
           <th><?php print t('Number of variables') ?></th>
           <td>
             <p>
-              <?php print MicaClientAnchorHelper::dataset_variables(empty($variables_dataset->total) ? 0 :
+              <?php print MicaClientAnchorHelper::datasetVariables(empty($variables_dataset->total) ? 0 :
                 obiba_mica_commons_format_number($variables_dataset->total), $dataset_dto->id); ?>
             </p>
           </td>
@@ -137,7 +141,7 @@ $description = empty($dataset_dto->description)
               <?php foreach ($dataset_type_dto->studyTable->studySummary->populationSummaries as $pop_summary) {
                 if ($pop_summary->id == $dataset_type_dto->studyTable->populationId) {
                   $population_summary = $pop_summary;
-                  print MicaClientAnchorHelper::study_population_modal($pop_summary);
+                  print MicaClientAnchorHelper::studyPopulationModal($pop_summary);
                   break;
                 }
               }
@@ -151,7 +155,7 @@ $description = empty($dataset_dto->description)
               $dce_anchor = NULL;
               foreach ($population_summary->dataCollectionEventSummaries as $dce_summary) {
                 if ($dce_summary->id == $dataset_type_dto->studyTable->dataCollectionEventId) {
-                  print MicaClientAnchorHelper::study_population_dce_modal(
+                  print MicaClientAnchorHelper::studyPopulationDceModal(
                     $dataset_type_dto->studyTable->studyId,
                     $dataset_type_dto->studyTable->populationId,
                     $dce_summary

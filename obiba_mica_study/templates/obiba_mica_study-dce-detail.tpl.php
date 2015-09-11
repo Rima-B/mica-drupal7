@@ -24,11 +24,11 @@ $dce_name = obiba_mica_commons_get_localized_field($dce, 'name');
                   <?php print t('Search') ?> <span class="caret"></span>
                 </button>
                 <ul class="dropdown-menu" role="menu">
-                  <li><?php print MicaClientAnchorHelper::coverage_dce_study($dce_uid) ?></li>
-                  <li><?php print MicaClientAnchorHelper::dce_study_variables(NULL, $dce_uid) ?></li>
+                  <li><?php print MicaClientAnchorHelper::coverageDceStudy($dce_uid) ?></li>
+                  <li><?php print MicaClientAnchorHelper::dceStudyVariables(NULL, $dce_uid) ?></li>
                 </ul>
               <?php else:
-                print MicaClientAnchorHelper::dce_study_variables(NULL, $dce_uid, true);
+                print MicaClientAnchorHelper::dceStudyVariables(NULL, $dce_uid, true);
                 ?>
               <?php endif; ?>
             </div>

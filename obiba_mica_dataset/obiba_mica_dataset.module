@@ -68,7 +68,62 @@ function obiba_mica_dataset_menu() {
     'access callback' => TRUE,
     'page arguments' => array(1, 2),
   );
-  /*********Ajax table routes**************/
+
+  /**
+   * C R O S S T A B     A N G U L A R     R E L A T E D
+   */
+  $items['mica/%/%/variables/%/%/ws'] = array(
+    'page callback' => 'obiba_mica_dataset_variables_search',
+    'file' => 'obiba_mica_dataset-page-detail.inc',
+    'access callback' => TRUE,
+    'page arguments' => array(1, 2, 4, 5)
+  );
+
+  $items['mica/%/%/variables/%/ws'] = array(
+    'page callback' => 'obiba_mica_dataset_variables_search',
+    'file' => 'obiba_mica_dataset-page-detail.inc',
+    'access callback' => TRUE,
+    'page arguments' => array(1, 2, 4)
+  );
+
+  $items['mica/%/%/variables/cross/%/by/%/ws'] = array(
+    'page callback' => 'obiba_mica_dataset_variables_crosstab',
+    'file' => 'obiba_mica_dataset-page-detail.inc',
+    'access callback' => TRUE,
+    'page arguments' => array(1, 2, 5, 7)
+  );
+
+  $items['mica/%/%/download_csv/cross/%/by/%/ws'] = array(
+    'page callback' => 'obiba_mica_dataset_variables_crosstab_download_csv',
+    'file' => 'obiba_mica_dataset-page-detail.inc',
+    'access callback' => TRUE,
+    'page arguments' => array(1, 2, 5, 7)
+  );
+
+  $items['mica/%/%/download_excel/cross/%/by/%/ws'] = array(
+    'page callback' => 'obiba_mica_dataset_variables_crosstab_download_excel',
+    'file' => 'obiba_mica_dataset-page-detail.inc',
+    'access callback' => TRUE,
+    'page arguments' => array(1, 2, 5, 7)
+  );
+
+  $items['mica/variable/%/ws'] = array(
+    'page callback' => 'obiba_mica_dataset_variable_info',
+    'file' => 'obiba_mica_dataset-page-detail.inc',
+    'access callback' => TRUE,
+    'page arguments' => array(2)
+  );
+
+  $items['mica/dataset/%/%/ws'] = array(
+    'page callback' => 'obiba_mica_dataset_info',
+    'file' => 'obiba_mica_dataset-page-detail.inc',
+    'access callback' => TRUE,
+    'page arguments' => array(2, 3)
+  );
+
+  /**
+   * A J A X     T A B L E     R O U T E S
+   */
   $items['mica/variables-tab/%/%'] = array(
     'title' => 'Dataset',
     'page callback' => 'obiba_mica_dataset_harmonizations_Variables_table_ajax',
@@ -168,7 +223,8 @@ function obiba_mica_dataset_library() {
       )
     );
   }
-  return $libraries;
+
+  return array_merge($libraries, obiba_mica_app_angular_load_angular_library());
 }
 
 /**
@@ -182,7 +238,7 @@ function obiba_mica_dataset_library() {
 
 function obiba_mica_dataset_theme($existing, $type, $theme, $path) {
   $path_theme = $path . '/templates';
-  return array(
+  $res = array_merge(array(
     'obiba_mica_dataset-list' => array('template' => 'obiba_mica_dataset-list', 'path' => $path_theme),
     'obiba_mica_dataset-detail' => array('template' => 'obiba_mica_dataset-detail', 'path' => $path_theme),
     'obiba_mica_dataset_ajax_variables-detail' => array(
@@ -204,8 +260,9 @@ function obiba_mica_dataset_theme($existing, $type, $theme, $path) {
       'template' =>
         'obiba_mica_variable_harmonization_algorithm',
       'path' => $path_theme
-    )
-  );
+    )),obiba_mica_dataset_variable_crosstab_theme($existing, $type, $theme, $path));
+
+  return $res;
 }
 
 function obiba_mica_dataset_get_all_datasets_studies($study_id) {
@@ -300,7 +357,7 @@ function obiba_mica_dataset_get_datasets_list_tab($datasets, $study_id) {
           array(
             'query' => array(
               'type' => 'variables',
-              'query' => MicaClient::add_parameter_dto_query_link(
+              'query' => MicaClient::addParameterDtoQueryLink(
                   array(
                     'variables' =>
                       array(
@@ -418,3 +475,96 @@ function _obiba_mica_variable_domains_list($variable) {
   }
   return NULL;
 }
+
+
+/**
+ * Implements hook_library_alter().
+ * Angular library compatible with Jquery 1.10
+ *
+ */
+function obiba_mica_dataset_library_alter(&$javascript, $module) {
+  if (($module == 'obiba_mica_dataset' || $module == 'system') && strstr(MicaClientPathProvider::CROSSTAB, current_path())) {
+    $path = drupal_get_path('module', 'jquery_update');
+    jquery_update_jquery_replace($javascript, NULL, $path, NULL, '1.10');
+  }
+}
+
+/**
+ * A N G U LA  R     R E L A T ED
+ */
+
+/**
+ * Implements hook_theme().
+ */
+function obiba_mica_dataset_variable_crosstab_theme($existing, $type, $theme, $path) {
+  $path_views_theme = $path . '/js/app/views';
+
+  return array(
+    'obiba_mica_dataset_variable_crosstab' => array(
+      'template' => 'obiba_mica_dataset_variable_crosstab',
+      'path' => $path_views_theme
+    ),
+    'obiba_mica_dataset_study_table' => array(
+      'template' => 'obiba_mica_dataset_study_table',
+      'path' => $path_views_theme
+    ),
+    'obiba_mica_dataset_variable_crosstab_frequencies' => array(
+      'template' => 'obiba_mica_dataset_variable_crosstab_frequencies',
+      'path' => $path_views_theme
+    ),
+    'obiba_mica_dataset_variable_crosstab_statistics' => array(
+      'template' => 'obiba_mica_dataset_variable_crosstab_statistics',
+      'path' => $path_views_theme
+    ),
+    'obiba_mica_dataset_variable_crosstab_frequencies_empty' => array(
+      'template' => 'obiba_mica_dataset_variable_crosstab_frequencies_empty',
+      'path' => $path_views_theme
+    ),
+    'obiba_mica_dataset_variable_crosstab_statistics_empty' => array(
+      'template' => 'obiba_mica_dataset_variable_crosstab_statistics_empty',
+      'path' => $path_views_theme
+    )
+  );
+}
+
+/**
+ * Implements hook_get_js()
+ */
+function obiba_mica_dataset_get_js() {
+  if(current_path()==MicaClientPathProvider::CROSSTAB) {
+    $module_path = drupal_get_path('module', 'obiba_mica_dataset');
+    $js = file_scan_directory($module_path . '/js/app', '/.*\.js$/', array('key' => 'name'));
+    ksort($js);
+    foreach ($js as $file_js) {
+      drupal_add_js($file_js->uri, array(
+        'type' => 'file',
+        'scope' => 'footer'
+      ));
+    }
+  }
+}
+/**
+ * Implements hook_load_menus (obiba_mica_app_angular)
+ */
+function obiba_mica_dataset_load_menus() {
+  $items = array();
+
+  $items[MicaClientPathProvider::CROSSTAB] = array(
+    'access callback' => TRUE,
+    'title' => t('Variable Crosstab')
+  );
+  return $items;
+}
+
+/**
+ * Implementation of hook_get_ng_module_to_load()
+ */
+
+function obiba_mica_dataset_get_ng_module_to_load() {
+  if(current_path()==MicaClientPathProvider::CROSSTAB) {
+    return 'mica.DatasetVariableCrosstab';
+  }
+  return FALSE;
+}
+
+

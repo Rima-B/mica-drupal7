@@ -41,7 +41,12 @@
                 headers: {'Content-Type': 'text/plain'},
                 errorHandler: true
               },
-              'get': {method: 'GET', params: {id: '@id'}, isArray: true, errorHandler: true}
+              'get': {
+                method: 'GET',
+                params: {id: '@id'},
+                isArray: true,
+                errorHandler: true
+              }
             });
           }])
 
@@ -74,34 +79,12 @@
         .factory('DataAccessRequestStatusResource', ['$resource',
           function ($resource) {
             return $resource('request/:id/_status/:status/ws', {}, {
-              'update': {method: 'PUT', params: {id: '@id', status: '@status'}, errorHandler: true}
-            });
-          }])
-
-        .service('ServerErrorAlertService', ['AlertService', 'ServerErrorUtils', 'ErrorTemplate',
-          function(AlertService, ServerErrorUtils, ErrorTemplate) {
-            this.alert = function(id, response) {
-              if (angular.isDefined(response.data)) {
-                var errorDto = JSON.parse(response.data);
-                if (angular.isDefined(errorDto) && angular.isDefined(errorDto.messageTemplate)) {
-                  AlertService.alert({
-                    id: id,
-                    type: 'danger',
-                    msgKey: errorDto.messageTemplate,
-                    msgArgs: errorDto.arguments
-                  });
-                  return;
-                }
+              'update': {
+                method: 'PUT',
+                params: {id: '@id', status: '@status'},
+                errorHandler: true
               }
-
-              AlertService.alert({
-                id: id,
-                type: 'danger',
-                msg: ServerErrorUtils.buildMessage(ErrorTemplate.getServerError(response))
-              });
-            };
-
-            return this;
+            });
           }])
 
         .service('DataAccessRequestService', ['LocaleStringUtils', 'moment', '$filter',
@@ -116,7 +99,7 @@
 
             this.status = statusList;
 
-            this.parseJsonSafely = function(json, defaultValue) {
+            this.parseJsonSafely = function (json, defaultValue) {
               try {
                 return JSON.parse(json);
               } catch (e) {
@@ -131,7 +114,7 @@
             };
 
             var canDoAction = function (request, action) {
-              return request.actions ? request.actions.indexOf(action) !== -1 : null;
+              return request.actions ? request.actions.indexOf(action) !== - 1 : null;
             };
 
             this.actions = {
@@ -153,7 +136,7 @@
             };
 
             var canChangeStatus = function (request, to) {
-              return request.nextStatus ? request.nextStatus.indexOf(to) !== -1 : null;
+              return request.nextStatus ? request.nextStatus.indexOf(to) !== - 1 : null;
             };
 
             this.nextStatus = {
@@ -222,15 +205,19 @@
                   case 'OPENED':
                     id = 'reopened'
                     break;
+
                   case 'SUBMITTED':
                     id = 'submitted';
                     break;
+
                   case 'REVIEWED':
                     id = 'reviewed';
                     break;
+
                   case 'APPROVED':
                     id = 'approved';
                     break;
+
                   case 'REJECTED':
                     id = 'rejected';
                     break;

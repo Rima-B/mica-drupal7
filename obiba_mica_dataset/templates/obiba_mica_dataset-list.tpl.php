@@ -26,11 +26,11 @@
             <?php print t('Search') ?> <span class="caret"></span>
           </button>
           <ul class="dropdown-menu" role="menu">
-            <li><?php print MicaClientAnchorHelper::coverage_datasets() ?></li>
-            <li><?php print MicaClientAnchorHelper::search_datasets() ?></li>
+            <li><?php print MicaClientAnchorHelper::coverageDatasets() ?></li>
+            <li><?php print MicaClientAnchorHelper::searchDatasets() ?></li>
           </ul>
         <?php else:
-          print MicaClientAnchorHelper::search_datasets(true);
+          print MicaClientAnchorHelper::searchDatasets(true);
         ?>
         <?php endif; ?>
       </div>

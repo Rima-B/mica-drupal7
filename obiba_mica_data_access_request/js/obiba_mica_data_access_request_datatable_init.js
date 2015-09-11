@@ -89,7 +89,6 @@
           return false;
         });
 
-
         $('#clickedDelete').on("click", function () {
           $.ajax({
             'async': true,

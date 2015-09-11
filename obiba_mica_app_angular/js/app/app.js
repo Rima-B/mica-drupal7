@@ -21,7 +21,10 @@ var mica;
 
       'use strict';
       /* App Module */
-      mica = angular.module('mica', modules.concat(Drupal.settings.angularjsApp.modules));
+      if (Drupal.settings.angularjsApp.module) {
+        modules = modules.concat(Drupal.settings.angularjsApp.module);
+      }
+      mica = angular.module('mica', modules);
       mica.config(['$routeProvider', '$translateProvider',
         function ($routeProvider, $translateProvider) {
           $routeProvider
@@ -32,7 +35,6 @@ var mica;
           $translateProvider.useLoader('DrupalTranslationLoader', {});
           $translateProvider.preferredLanguage('en');
 
-
         }]);
 
       mica.controller('MainController', [
@@ -41,7 +43,7 @@ var mica;
 
       mica.factory('TranslationService', ['$resource',
         function ($resource) {
-          return $resource(Drupal.settings.basePath + 'obiba_main_app_angular/translation', {}, {
+          return $resource(Drupal.settings.basePath + 'obiba_mica_app_angular/translation', {}, {
             'get': {method: 'GET'}
           });
         }]);
@@ -53,7 +55,7 @@ var mica;
 
             $http({
               method: 'GET',
-              url: Drupal.settings.basePath + 'obiba_main_app_angular/translation'
+              url: Drupal.settings.basePath + 'obiba_mica_app_angular/translation'
             }).success(function (data) {
               deferred.resolve(data);
             }).error(function () {
@@ -63,6 +65,7 @@ var mica;
             return deferred.promise;
           }
         });
+
       mica.factory('ErrorTemplate', function () {
         return {
           getServerError: function (response) {
@@ -73,10 +76,9 @@ var mica;
             } else {
               response.data = {messageTemplate: 'server.error.' + response.status};
             }
-            return  response;
+            return response;
           }
         }
-
 
       });
 
@@ -92,7 +94,7 @@ var mica;
 
             return '';
           }
-        }
+        };
 
         return {
           redirectDrupalMessage: function (response) {
@@ -105,8 +107,81 @@ var mica;
           }
         }
 
+      })
 
-      });
+      /**
+       * A N G U L A R     G L O B A L     S E R V I C E S
+       */
+
+      .service('ServerErrorAlertService', ['AlertService', 'ServerErrorUtils', 'ErrorTemplate',
+        function(AlertService, ServerErrorUtils, ErrorTemplate) {
+          this.alert = function(id, response) {
+            if (angular.isDefined(response.data)) {
+              var errorDto = JSON.parse(response.data);
+              if (angular.isDefined(errorDto) && angular.isDefined(errorDto.messageTemplate)) {
+                AlertService.alert({
+                  id: id,
+                  type: 'danger',
+                  msgKey: errorDto.messageTemplate,
+                  msgArgs: errorDto.arguments
+                });
+                return;
+              }
+            }
+
+            AlertService.alert({
+              id: id,
+              type: 'danger',
+              msg: ServerErrorUtils.buildMessage(ErrorTemplate.getServerError(response))
+            });
+          };
+
+          return this;
+        }])
+
+      .service('AttributeService',
+        function () {
+          return {
+            getAttributes: function(container, names) {
+              if (!container && !container.attributes && !names){
+                return null;
+              }
+              return container.attributes.filter(
+                function(attribute) {
+                  return names.indexOf(attribute.name) !== -1;
+                });
+            },
+
+            getValue: function (attribute) {
+              if (!attribute) {
+                return null;
+              }
+              var value = attribute.values.filter(
+                function(value) {
+                  return value.lang === Drupal.settings.angularjsApp.locale || value.lang === 'und';
+                });
+
+              return value.length > 0 ? value[0].value : null;
+            }
+          }
+        })
+
+      .service('LocalizedStringService',
+        function () {
+          return {
+            getValue: function (localized) {
+              if (!localized) {
+                return null;
+              }
+              var value = localized.filter(
+                function(locale) {
+                  return locale.lang === Drupal.settings.angularjsApp.locale || locale.lang === 'und';
+                });
+
+              return value.length > 0 ? value[0].value : null;
+            }
+          }
+        })
 
     }
   }

@@ -27,7 +27,7 @@ function obiba_mica_search_menu() {
     'page callback' => 'obiba_mica_search_coverage_page',
     'menu_name' => 'main-menu',
     'weight' => 11,
-    'access callback' => TRUE
+    'access callback' => 'obiba_mica_search_coverage_access_callback'
   );
 
   $items['mica/coverage/download'] = array(
@@ -196,7 +196,7 @@ function obiba_mica_search_block_view($delta = '') {
   $block = array();
   switch ($delta) {
     case 'facet-search':
-      $output = _get_facets_theme();
+      $output = obiba_mica_search_get_facets_theme();
       $block['subject'] = t('Facet search');
       $block['content'] = $output;
       break;
@@ -212,7 +212,7 @@ function obiba_mica_search_block_view($delta = '') {
   return $block;
 }
 
-function _get_facets_theme() {
+function obiba_mica_search_get_facets_theme() {
   return theme('obiba_mica_search_tab_block', array(
     'obiba_mica_variable' =>
       _obiba_mica_search_get_facets_block_by_dto_type('facet_conf_variable', 'variables'),
@@ -232,7 +232,7 @@ function _obiba_mica_search_get_facets_block_by_dto_type($dto_type, $type) {
         $rendered_group = "";
 
         foreach ($facet['children'] as $key_child_facet => $child_facet) {
-          if (!MicaClient::has_entity_aggregations($child_facet['dto'])) {
+          if (!MicaClient::hasEntityAggregations($child_facet['dto'])) {
             continue;
           }
           $content_block = obiba_mica_search_process_block_theme('search-' . $child_facet['aggs'], $type, $facet['dto']->children);
@@ -254,7 +254,7 @@ function _obiba_mica_search_get_facets_block_by_dto_type($dto_type, $type) {
         }
       }
       else {
-        $has_terms = MicaClient::has_entity_by_id_aggregation($facet['aggs']);
+        $has_terms = MicaClient::hasEntityByIdAggregation($facet['aggs']);
         // aggs that are from studies but must be displayed as variable aggregations
         $source_type = preg_match("/^(studyIds|dceIds)$/", $key_facet) ? "variables" : $type;
         $content_block =
@@ -295,7 +295,7 @@ function obiba_mica_search_load_libs() {
     'UrlErrorsQuery' => !empty($_SESSION['errorsQuery']) ? $_SESSION['errorsQuery'] : NULL,
     'ErrorMessage' => t('An error occurred when parsing url query, Please make sure to use facet search tools
        to perform your search. <br>This page will be refeshed in 3s '),
-    'ConfigTaxonomiesCount' => MicaClient::get_taxonomies_count()
+    'ConfigTaxonomiesCount' => MicaClient::getTaxonomiesCount()
   ), 'setting');
   $facet_conf["general"] = //
     array( //
@@ -419,11 +419,11 @@ function obiba_mica_search_variable_page_search() {
   //drupal_set_title(t('@request variables search', array('@request' => ucwords($request))));
 
   if (!obiba_mica_commons_is_ajax()) {
-    _get_search_data();
+    obiba_mica_search_get_search_data();
     $url_param = explode('?', request_uri());
 
     if (!empty($url_param[1])) {
-      return drupal_goto(request_path(), array(
+      drupal_goto(request_path(), array(
         'fragment' => '!' . $url_param[1]
       ), 302);
     }
@@ -433,15 +433,16 @@ function obiba_mica_search_variable_page_search() {
     return theme('obiba_mica_search_search', array());
   }
 
-  $output = theme('obiba_mica_search_search', _get_search_data()); //populates facets session values
+  // Populates facets session values.
+  $output = theme('obiba_mica_search_search', obiba_mica_search_get_search_data());
 
-  return drupal_json_output(array(
-    'facets' => _get_facets_theme(),
+  drupal_json_output(array(
+    'facets' => obiba_mica_search_get_facets_theme(),
     'searchResult' => $output
   ));
 }
 
-function _get_search_data() {
+function obiba_mica_search_get_search_data() {
   $studies = NULL;
   $study_charts = NULL;
   $variables = NULL;
@@ -559,7 +560,7 @@ function obiba_mica_search_coverage_page() {
     $output = theme('obiba_mica_search_coverage', $coverages_data);
 
     return drupal_json_output(array(
-      'facets' => empty($parts['with-facets']) || strtolower($parts['with-facets']) !== "false" ? _get_facets_theme() : NULL,
+      'facets' => empty($parts['with-facets']) || strtolower($parts['with-facets']) !== "false" ? obiba_mica_search_get_facets_theme() : NULL,
       'searchResult' => $output,
       'coverageTaxonomies' => array_values(array_map(function($c) {return $c->taxonomy->name;}, $coverages_data['coverages']->taxonomies)),
       'aggsDictionary' => empty($parts['with-facets']) || strtolower($parts['with-facets']) !== "false" ? obiba_mica_search_create_aggs_dictionary() : NULL
@@ -671,7 +672,7 @@ function _obiba_mica_search_get_coverage_data($query, $group_by, $taxonomy) {
     }
   }
 
-  MicaClient::order_taxonomies($coverages->taxonomies, function ($value) {
+  MicaClient::orderTaxonomies($coverages->taxonomies, function ($value) {
     return $value->taxonomy->name;
   });
 
@@ -902,32 +903,28 @@ function obiba_mica_search_studies_table($studies) {
     foreach ($summaries as $study) {
       $column_row = array();
       $query_studies_param =
-        MicaClient::add_parameter_dto_query_link(array(
+        MicaClient::addParameterDtoQueryLink(array(
           'studies' => array('terms' => array('studyIds' => $study->id))
         ));
 
       $query_studies_param_harmo =
-        MicaClient::add_parameter_dto_query_link(array(
+        MicaClient::addParameterDtoQueryLink(array(
           'variables' =>
             array('terms' => array('studyIds' => $study->id, 'variableType' => 'dataschema'))
         ));
 
       $query_studies_param_dataset =
-        MicaClient::add_parameter_dto_query_link(array(
+        MicaClient::addParameterDtoQueryLink(array(
           'variables' =>
             array('terms' => array('studyIds' => $study->id, 'variableType' => 'study'))
         ));
 
       $number_variables = obiba_mica_commons_format_number($study->{'obiba.mica.CountStatsDto.studyCountStats'}->variables);
-      //MicaClient::obiba_mica_search_get_item_count('studies', 'variables', $study->id);
 
       $number_tables_study_harmo = $study->{'obiba.mica.CountStatsDto.studyCountStats'}->harmonizationDatasets;
-      //    MicaClient::obiba_mica_search_get_item_count('studies', 'studyTables-studyId', $study->id);
       $number_table_study_study = $study->{'obiba.mica.CountStatsDto.studyCountStats'}->studyDatasets;
-      // MicaClient::obiba_mica_search_get_item_count('studies', 'studyTable-studyId', $study->id);
 
       $number_networks_study = $study->{'obiba.mica.CountStatsDto.studyCountStats'}->networks;
-      // MicaClient::obiba_mica_search_get_item_count('studies', 'networks-studyId', $study->id);
 
       $name = obiba_mica_commons_get_localized_field($study, 'name');
 
@@ -1054,7 +1051,7 @@ function obiba_mica_search_datasets_table($datasets) {
     foreach ($summaries as $dataset) {
       $row = array();
       $query_datasets_param =
-        MicaClient::add_parameter_dto_query_link(array('variables' => array('terms' => array('datasetId' => $dataset->id))));
+        MicaClient::addParameterDtoQueryLink(array('variables' => array('terms' => array('datasetId' => $dataset->id))));
 
       $count_networks = !empty($dataset->{'obiba.mica.CountStatsDto.datasetCountStats'}->networks) ?
         $dataset->{'obiba.mica.CountStatsDto.datasetCountStats'}->networks : NULL;
@@ -1231,10 +1228,10 @@ function obiba_mica_search_networks_table($networks) {
     foreach ($summaries as $network) {
       $rows_columns = array();
       $param_network_query =
-        MicaClient::add_parameter_dto_query_link(array('networks' => array('terms' => array('id' => $network->id))));
+        MicaClient::addParameterDtoQueryLink(array('networks' => array('terms' => array('id' => $network->id))));
 
       $param_network_query_harmo_dataset =
-        MicaClient::add_parameter_dto_query_link(
+        MicaClient::addParameterDtoQueryLink(
           array(
             'networks' => array('terms' => array('id' => $network->id)),
             'variables' => array('terms' => array('variableType' => 'dataschema'))
@@ -1242,7 +1239,7 @@ function obiba_mica_search_networks_table($networks) {
         );
 
       $param_network_query_study_dataset =
-        MicaClient::add_parameter_dto_query_link(
+        MicaClient::addParameterDtoQueryLink(
           array(
             'networks' => array('terms' => array('id' => $network->id)),
             'variables' => array('terms' => array('variableType' => 'study'))
@@ -1352,9 +1349,11 @@ function obiba_mica_search_get_variables_count_from_studies_dto($studies) {
 
 function _obiba_mica_search_facet_expand_strategy() {
   // count of zero signifies all taxonomies are included
-  return !variable_get_value('studies_facet_search') && MicaClient::get_taxonomies_count() === 1
+  return !variable_get_value('studies_facet_search') && MicaClient::getTaxonomiesCount() === 1
     ? ObibaFacetSearchBlockConstants::EXPAND_ALL
     : NULL;
 }
 
-
+function obiba_mica_search_coverage_access_callback() {
+  return variable_get_value('mica_statistics_coverage');
+}

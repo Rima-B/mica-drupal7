@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * class tools provided by Mica client
+ */
+
 class ObibaDatasetConstants {
   const FACET_TYPE_HIDE = 0;
   const FACET_TYPE_AUTOCOMPLETE = 1;
@@ -10,7 +15,10 @@ class ObibaDatasetConstants {
   const  INCOMPLETE_HARMO_ICON = 'glyphicon-minus';
   const  IMPOSSIBLE_HARMO_ICON = 'glyphicon-remove';
 
-  static function get_icon() {
+  /**
+   * Set the harmonization status icon.
+   */
+  public static function getIcon() {
     $impossible_icon = variable_get_value('dataset_harmonization_impossible_icon');
     $color_icon = (!empty($impossible_icon) && $impossible_icon != ObibaDatasetConstants::IMPOSSIBLE_HARMO_ICON) ?
       ' alert-black' : ' alert-danger';

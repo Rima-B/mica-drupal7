@@ -8,25 +8,37 @@
 $path_module_protobuf = drupal_get_path('module', 'obiba_protobuf');
 $path_module_protos = drupal_get_path('module', 'obiba_mica_model');
 
-include_once($path_module_protobuf . '/protobuf/Protobuf.php');
+include_once $path_module_protobuf . '/protobuf/Protobuf.php';
 use \DrSlump\Protobuf;
 
 Protobuf::autoload();
 
-include_once($path_module_protos . '/protos/Mica.php');
-include_once($path_module_protos . '/protos/MicaSearch.php');
+include_once $path_module_protos . '/protos/Mica.php';
+include_once $path_module_protos . '/protos/MicaSearch.php';
 
 /**
  * Class MicaStudyResource
  */
 class MicaTaxonomyResource extends MicaClient {
 
+  /**
+   * Instance initialisation.
+   *
+   * @param string $mica_url
+   *   The Mica server url.
+   */
   public function __construct($mica_url = NULL) {
     parent::__construct($mica_url);
-    Protobuf::setDefaultCodec(new Protobuf\Codec\Binary);
+    Protobuf::setDefaultCodec(new Protobuf\Codec\Binary());
   }
 
-  public function get_taxonomy_summaries() {
+  /**
+   * Get taxonomy summaries.
+   *
+   * @return object
+   *   The taxonomy summaries wrapper.
+   */
+  public function getTaxonomySummaries() {
     $this->setLastResponse(NULL);
     $url_studies = $this->micaUrl . '/config/taxonomies/summaries';
     $request = new HttpClientRequest($url_studies, array(
@@ -34,7 +46,7 @@ class MicaTaxonomyResource extends MicaClient {
       'headers' => $this->authorizationHeader(array(
           'Accept' => array(parent::HEADER_JSON),
         )
-      )
+      ),
     ));
     $client = $this->client();
     try {
