@@ -138,7 +138,7 @@ function obiba_mica_study_get_opal_url($opal_url) {
  */
 function obiba_mica_study_library() {
   $libraries = array();
-  $version_lib = variable_get('obiba-$version-time-line-version', '1.0');
+  $version_lib = variable_get('obiba-time-line-version', '1.0');
   $lib_path = libraries_get_path('mica-study-timeline-'.$version_lib);
   // Make sure we have a valid library path before returning library load info.
   if (!empty($lib_path)) {

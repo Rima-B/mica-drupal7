@@ -39,7 +39,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">
-          Close
+          <?php print t('Close'); ?>
         </button>
       </div>
     </div>
