@@ -83,7 +83,7 @@ function obiba_mica_drush_timeline_download() {
     $version_time_line = $args[0];
   }
   else {
-    $version_time_line = variable_get('obiba-$version-time-line-version', '1.0');
+    $version_time_line = variable_get('obiba-time-line-version', '1.0');
   }
   $svn_cmd = 'wget  https://github.com/obiba/mica-study-timeline/archive/' . $version_time_line . '.zip';
   if (drush_shell_exec($svn_cmd)) {
