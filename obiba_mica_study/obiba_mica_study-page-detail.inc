@@ -192,11 +192,9 @@ function obiba_mica_study_get_populations_detail($study_detail, $dce_variables_n
   if (!empty($study_detail->populations)) {
     foreach ($study_detail->populations as $population) {
       if (!empty($flat_study_attachments) && module_exists('obiba_mica_files')) {
-        if (!empty("/study/$study_detail->id/population/$population->id")) {
           $path_population_attachment = "/study/$study_detail->id/population/$population->id";
           $filtered_tree_path = $flat_study_attachments->findNodeFullPath($path_population_attachment);
           $themed_attachment = $flat_study_attachments->themeFolders($filtered_tree_path, MicaFilesResource::DCE,$population->id );
-        }
       }
       $dce_uids = array();
       if (!empty($population->dataCollectionEvents)) {

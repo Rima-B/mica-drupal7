@@ -31,7 +31,7 @@ class MicaFilesResource extends MicaClient {
   public function getAttachment($entity_type, $entity_id) {
     $this->setLastResponse(NULL);
     $path_attachments = '/' . $entity_type . '/' . $entity_id;
-    $url = $this->micaUrl . '/files-search/' . rawurlencode($path_attachments) .
+    $url = $this->micaUrl . '/files-search' . $path_attachments .
       '?order=asc&query=&recursively=true&sort=name';
     $request = new HttpClientRequest($url, array(
       'method' => HttpClientRequest::METHOD_GET,
@@ -54,7 +54,7 @@ class MicaFilesResource extends MicaClient {
           '@code' => $e->getCode(),
           '@message' => $e->getMessage(),
         ), WATCHDOG_WARNING);
-      return array();
+      return $this->wrapAttachments($entity_type, $entity_id,array());
     }
   }
 
@@ -303,7 +303,8 @@ class Tree {
 
   private function processThemeFolders($node, $exclude_path = NULL, $id_entity, $indent = 0, &$has_files = NULL) {
     $folder_theme = NULL;
-    if (!empty($node->getFullPath()) && (empty($exclude_path) || !strstr($node->getFullPath(), $exclude_path))) {
+    $full_path = $node->getFullPath();
+    if (!empty($full_path) && (empty($exclude_path) || !strstr($full_path, $exclude_path))) {
 
       $data = $node->getData();
       if (!empty($data)) {
@@ -355,10 +356,11 @@ class Tree {
   }
 
   private function dump_treeInternal($node, $indent = 0) {
+    $data = $node->getData();
     print str_repeat('&nbsp;', $indent)
       . $node->getPath()
       . '&nbsp'
-      . (empty($node->getData()) ? '' : $node->getData())
+      . (empty($data) ? '' : $data)
       . '<br/>';
 
     if ($node->hasChildren()) {

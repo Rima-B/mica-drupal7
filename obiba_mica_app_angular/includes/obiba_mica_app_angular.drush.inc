@@ -10,7 +10,7 @@
 function obiba_mica_app_angular_drush_command() {
   $items['angular-app'] = array(
     'callback' => 'obiba_mica_drush_angular_app',
-    'aliases' => 'asflib',
+    'aliases' => array('asflib'),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
     'description' => dt('Install the Angula js + angular-schema-form library, Please make sure to perform this command  "bower install angular-schema-form"  in current folder before installing '),
     'arguments' => array(

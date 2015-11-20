@@ -390,8 +390,8 @@ function obiba_mica_dataset_get_datasets_list_tab($datasets, $study_id) {
       }
 
       $dataset_name = obiba_mica_commons_get_localized_field($summary, 'name');
-      $dataset_type = !empty($summary->{'obiba.mica.StudyDatasetDto.type'}) ? 'study-dataset' : 'harmonization-dataset';
-      $dataset_type_name = !empty($summary->{'obiba.mica.StudyDatasetDto.type'}) ? t('Study dataset') : t('Harmonization dataset');
+      $dataset_type = $summary->variableType == 'Study' ? 'study-dataset' : 'harmonization-dataset';
+      $dataset_type_name = $summary->variableType == 'Study' ? t('Study dataset') : t('Harmonization dataset');
       $dataset_rows[$key_dataset] = array(
         'data' => array(
           'label' => l($dataset_name, 'mica/' . $dataset_type . '/' . $summary->id),
