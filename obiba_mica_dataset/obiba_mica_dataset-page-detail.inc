@@ -524,7 +524,14 @@ function obiba_mica_dataset_harmonizations_table_data($dataset_type_dto, $datase
 function obiba_mica_dataset_coverage($dataset_id) {
   $coverage['charts'] = obiba_mica_search_query_charts(
     MicaClient::addParameterDtoQueryLink(
-      array('variables' => array('terms' => array('datasetId' => $dataset_id)))), NULL, NULL,
+      array(
+        'variables' => array(
+          'terms' => array(
+            'datasetId' => $dataset_id
+          )
+        )
+      )
+    ), NULL, NULL,
     array('with-facets' => 'false'));
   if (!empty($coverage['charts'])) {
     $coverage['has_coverage'] = TRUE;

@@ -276,13 +276,21 @@ class VariableStatistics {
     // Frequencies of missing.
     $missings = array();
     if (!empty($this->variableStat->frequencies)) {
+      $missing_end = array();
       foreach ($this->variableStat->frequencies as $frequency) {
         if ($frequency->value != 'NOT_NULL') {
-          array_push($missings, $frequency->value);
+          if ($frequency->value == 'N/A') {
+            $missing_end = $frequency->value;
+          }
+          else {
+            array_push($missings, $frequency->value);
+          }
         }
       }
+      if (!empty($missing_end)) {
+        array_push($missings, $missing_end);
+      }
     }
-
     // Statistics.
     foreach ($aggregations as $aggregation) {
       $row = array();
@@ -558,7 +566,7 @@ class VariableStatistics {
         property_exists($statistics, 'min') ? obiba_mica_commons_format_number(round($statistics->min, 1), 1) : '-',
         property_exists($statistics, 'max') ? obiba_mica_commons_format_number(round($statistics->max, 1), 1) : '-',
         property_exists($statistics, 'mean') && property_exists($statistics, 'stdDeviation') ?
-        obiba_mica_commons_format_number(round($statistics->mean, 1), 1) : '-',
+          obiba_mica_commons_format_number(round($statistics->mean, 1), 1) : '-',
         property_exists($statistics, 'stdDeviation') ? obiba_mica_commons_format_number(round($statistics->stdDeviation, 1), 1) : '-',
         obiba_mica_commons_format_number($n),
       );

@@ -202,7 +202,7 @@ function obiba_mica_commons_clean_string($str) {
     return $nstr;
   }
 
-  return t(ucwords(str_replace('_', ' ', $str)));
+  return t(str_replace('_', ' ', $str));
 }
 
 /**
@@ -475,8 +475,8 @@ function obiba_mica_commons_create_search_form($context, $no_acronym = TRUE, $no
   $form['#id'] = 'obiba-mica-search-form';
   $form['#method'] = 'get';
   $form['#attributes'] = array(
-      'class' => 'form-inline',
-    );
+    'class' => 'form-inline',
+  );
   if (isset($_GET['search-sort']) ||
     isset($_GET['search-sort-order']) ||
     isset($_GET['search-query'])
@@ -493,7 +493,7 @@ function obiba_mica_commons_create_search_form($context, $no_acronym = TRUE, $no
 
   $form['search-sort'] = array(
     '#type' => 'select',
-    '#theme_wrappers'   => array(), // remove the wrapper
+    '#theme_wrappers' => array(), // remove the wrapper
     '#title' => '',
     '#description' => t('Sort by'),
     '#options' => $options,
@@ -502,7 +502,7 @@ function obiba_mica_commons_create_search_form($context, $no_acronym = TRUE, $no
 
   $form['search-sort-order'] = array(
     '#type' => 'select',
-    '#theme_wrappers'   => array(), // remove the wrapper
+    '#theme_wrappers' => array(), // remove the wrapper
     '#title' => '',
     '#description' => t('Sort order'),
     '#options' => array(
@@ -517,7 +517,7 @@ function obiba_mica_commons_create_search_form($context, $no_acronym = TRUE, $no
     '#title' => '',
     '#size' => 15,
     '#description' => t('Filter by'),
-    '#theme_wrappers'   => array(), // remove the wrapper
+    '#theme_wrappers' => array(), // remove the wrapper
     '#default_value' => !empty($_GET['search-query']) ? check_plain($_GET['search-query']) : NULL,
     '#prefix' => '<div class="input-group"><span class="input-group-addon glyphicon glyphicon-search"></span>',
     '#suffix' => '</div>',
@@ -543,8 +543,8 @@ function obiba_mica_commons_create_size_select_form($context) {
   $form['#id'] = 'obiba-mica-size-select-form';
   $form['#method'] = 'get';
 
-  $form['#prefix'] = $context['#prefix']?$context['#prefix']:'';
-  $form['#suffix'] = $context['#suffix']?$context['#suffix']:'';
+  $form['#prefix'] = $context['#prefix'] ? $context['#prefix'] : '';
+  $form['#suffix'] = $context['#suffix'] ? $context['#suffix'] : '';
 
   $form['size'] = array(
     '#type' => 'select',
@@ -554,7 +554,7 @@ function obiba_mica_commons_create_size_select_form($context) {
     '#default_value' => $default_size,
     '#prefix' => '<div class="input-group">',
     '#suffix' => "</div>",
-    '#theme_wrappers'   => array(), // remove the wrapper
+    '#theme_wrappers' => array(), // remove the wrapper
     '#attributes' => array(
       'id' => 'edit-size',
     ),
@@ -725,4 +725,15 @@ function obiba_mica_commons_is_authorized_agate_user() {
     return TRUE;
   }
   return FALSE;
+}
+
+/**
+ * Helper return the taxonomies filter on an array format
+ */
+function obiba_mica_commons_taxonomies_filter_array() {
+  $mica_taxonomy_figures = trim(variable_get_value('mica_taxonomy_figures'));
+  if (empty($mica_taxonomy_figures)) {
+    return NULL;
+  }
+  return explode(',', $mica_taxonomy_figures);
 }

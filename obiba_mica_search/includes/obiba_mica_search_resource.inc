@@ -29,8 +29,8 @@ class MicaSearchResource extends MicaClient {
     }
   }
 
-  public function taxonomies_coverage($parameters = NULL, $default_dto_search = NULL) {
-    $coverage_result = $this->_aggregation_resource('coverage', $parameters, $default_dto_search);
+  public function taxonomies_coverage($parameters = NULL, $default_dto_search = NULL, $query_param_parts = NULL) {
+    $coverage_result = $this->_aggregation_resource('coverage', $parameters, $default_dto_search, $query_param_parts);
 
     if (!empty($coverage_result) && !empty($coverage_result->queryResult)) {
       $_SESSION['request-search-response'] = 'no-empty';
@@ -59,12 +59,13 @@ class MicaSearchResource extends MicaClient {
   /*
    * $parameters : json query hard coded
    * */
-  private function  _aggregation_resource($aggregation_type = 'search', $parameters = NULL, $default_dto_search = NULL) {
+  private function  _aggregation_resource($aggregation_type = 'search', $parameters = NULL, $default_dto_search = NULL, $query_param_parts = NULL) {
     $response_data =
       $this->_aggregation_resource_internal(parent::HEADER_JSON,
         $aggregation_type,
         $parameters,
-        $default_dto_search
+        $default_dto_search,
+        $query_param_parts
       );
 
     if (!empty($response_data)) {
@@ -111,7 +112,12 @@ class MicaSearchResource extends MicaClient {
 
     $request_parameters = array();
     if ($aggregation_type == 'coverage') {
-      $request_parameters['strict'] = variable_get_value('variables_strict_coverage', array('default' => TRUE)) ? 'true' : 'false';
+      // unless explicitly specified, set the strictness of the coverage as configured
+      if (!empty($parts['strict'])) {
+        $request_parameters['strict'] = $parts['strict'];
+      } else {
+        $request_parameters['strict'] = variable_get_value('variables_strict_coverage', array('default' => TRUE)) ? 'true' : 'false';
+      }
     }
 
     $request = new HttpClientRequest($url, array(

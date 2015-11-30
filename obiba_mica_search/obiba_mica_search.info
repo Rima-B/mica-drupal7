@@ -4,4 +4,3 @@ package = Obiba
 core = 7.x
 
 dependencies[] = obiba_mica_commons
-dependencies[] = charts_google

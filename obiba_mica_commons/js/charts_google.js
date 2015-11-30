@@ -9,7 +9,7 @@
     // First time loading in Views preview may not work because the Google JS
     // API may not yet be loaded.
     if (typeof google !== 'undefined') {
-      google.load('visualization', '1', { callback: renderCharts });
+      google.load('visualization', '1', {callback: renderCharts});
     }
 
     // Redraw charts on window resize.
@@ -30,24 +30,22 @@
       $('.charts-google').once('charts-google', function () {
         if ($(this).attr('data-chart')) {
           var config = $.parseJSON($(this).attr('data-chart'));
-          console.log(config);
           var wrap = new google.visualization.ChartWrapper();
           wrap.setChartType(config.visualization);
           wrap.setDataTable(config.data);
           wrap.setOptions(config.options);
-          console.log(config);
           // Apply data formatters. This only affects tooltips. The same format is
           // already applied via the hAxis/vAxis.format option.
           var dataTable = wrap.getDataTable();
           if (config.options.series) {
-            for (var n = 0; n < config.options.series.length; n++) {
+            for (var n = 0; n < config.options.series.length; n ++) {
               if (config.options.series[n]['_format']) {
                 var format = config.options.series[n]['_format'];
                 if (format['dateFormat']) {
-                  var formatter = new google.visualization.DateFormat({ pattern: format['dateFormat'] });
+                  var formatter = new google.visualization.DateFormat({pattern: format['dateFormat']});
                 }
                 else {
-                  var formatter = new google.visualization.NumberFormat({ pattern: format['format'] });
+                  var formatter = new google.visualization.NumberFormat({pattern: format['format']});
                 }
                 formatter.format(dataTable, n + 1);
               }
@@ -68,10 +66,10 @@
                 if (config._data[rowIndex].hasOwnProperty(columnIndex)) {
                   for (var role in config._data[rowIndex][columnIndex]) {
                     if (config._data[rowIndex][columnIndex].hasOwnProperty(role)) {
-                      if (!columnsToAdd[columnIndex]) {
+                      if (! columnsToAdd[columnIndex]) {
                         columnsToAdd[columnIndex] = {};
                       }
-                      if (!columnsToAdd[columnIndex][role]) {
+                      if (! columnsToAdd[columnIndex][role]) {
                         columnsToAdd[columnIndex][role] = new Array(rowCount);
                       }
                       columnsToAdd[columnIndex][role][rowIndex] = config._data[rowIndex][columnIndex][role];
@@ -82,7 +80,7 @@
             }
           }
           // Add columns from the right-most position.
-          for (var columnIndex = columnCount; columnIndex >= 0; columnIndex--) {
+          for (var columnIndex = columnCount; columnIndex >= 0; columnIndex --) {
             if (columnsToAdd[columnIndex]) {
               for (var role in columnsToAdd[columnIndex]) {
                 if (columnsToAdd[columnIndex].hasOwnProperty(role)) {
@@ -102,7 +100,7 @@
             var selectedItem = wrap.getChart().getSelection()[0].row + 1;
             if (selectedItem) {
               window.location.href = Drupal.settings.basePath + 'mica/search#!query=' +
-                config.options.links[ wrap.getChart().getSelection()[0].row ][ wrap.getChart().getSelection()[0].column ];
+                config.options.links[wrap.getChart().getSelection()[0].column - 1][wrap.getChart().getSelection()[0].row];
             }
           }
 

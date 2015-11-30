@@ -1,6 +1,7 @@
 <?php // dpm($aggregation_facet);?>
 <?php // dpm((((($term->count*200)/$totalhits))*100)/200);?>
-<li class="facets" data-form-id="facet-search-<?php print $aggregation_facet ?>">
+<li class="facets"
+  data-form-id="facet-search-<?php print $aggregation_facet ?>">
   <table>
     <tr>
       <td>
@@ -22,15 +23,15 @@
             }
           }
         }
-        $tooltip = empty($term->description) ? (strlen($title) < 30 ? '' : $title) : $term->description
+        $tooltip = empty($term->description) ? (strlen($title) < 30 ? '' : $title) : $term->description;
         ?>
         <span id="checkthebox"
           class="term-field <?php print $type_string . $aggregation_facet; ?> unchecked"
           aggregation="<?php print $type_string . $aggregation_facet . '[]'; ?>"
-          value="<?php print  $title; ?>"
+          value="<?php print  htmlspecialchars($title); ?>"
           data-value="<?php print  $term->key; ?>"
           data-toggle="tooltip"
-          title="<?php print $tooltip ?>">
+          title="<?php print htmlspecialchars($tooltip) ?>">
           <i class="glyphicon glyphicon-unchecked"></i>
           <div class="tilte-term"><?php print $title ?></div>
         </span>

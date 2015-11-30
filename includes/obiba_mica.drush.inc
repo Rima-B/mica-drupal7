@@ -8,13 +8,13 @@
  * Implements hook_drush_command().
  */
 function obiba_mica_drush_command() {
-  $items['download-dependencies'] = array(
+  $items['download-mica-dependencies'] = array(
     'callback' => 'obiba_mica_drush_download_js_dependencies',
-    'aliases' => array('dldeps'),
+    'aliases' => array('dlmdeps'),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
-    'description' => dt('Download JavaScript dependencies for the production environment.'),
+    'description' => dt('Download Mica JavaScript dependencies for the production environment.'),
     'arguments' => array(
-      'path' => dt('Optional. The path to the download folder. If omitted, Drush will use the default location (<code>sites/all/libraries/angular-schema-form</code>).'),
+      'path' => dt('Optional. The path to the download folder. If omitted, Drush will use the default location (<code>sites/all/libraries</code>).'),
     ),
   );
 
