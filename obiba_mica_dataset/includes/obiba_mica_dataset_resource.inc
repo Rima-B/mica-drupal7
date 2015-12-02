@@ -85,7 +85,7 @@ class MicaDatasetResource extends MicaClient {
    */
   public function getDataset($dataset_id, $resource = 'dataset') {
     $this->setLastResponse(NULL);
-    $url = $this->micaUrl . '/' . (empty($resource) ? 'dataset' : $resource) . '/' . rawurlencode($dataset_id);
+    $url = $this->micaUrl . '/' . (empty($resource) ? 'dataset' : $resource) . '/' . $dataset_id;
 
     $request = new HttpClientRequest($url, array(
       'method' => HttpClientRequest::METHOD_GET,

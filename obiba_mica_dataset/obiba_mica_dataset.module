@@ -54,7 +54,7 @@ function obiba_mica_dataset_menu() {
     'page callback' => 'obiba_mica_dataset_page_detail',
     'file' => 'obiba_mica_dataset-page-detail.inc',
     'access callback' => TRUE,
-    'page arguments' => array(1, 2),
+    'page arguments' => array(2),
   );
 
   $items['mica/harmonization-dataset/%'] = array(
@@ -62,7 +62,7 @@ function obiba_mica_dataset_menu() {
     'page callback' => 'obiba_mica_dataset_page_detail',
     'file' => 'obiba_mica_dataset-page-detail.inc',
     'access callback' => TRUE,
-    'page arguments' => array(1, 2),
+    'page arguments' => array(2),
   );
   // C R O S S T A B     A N G U L A R     R E L A T E D.
   $items['mica/%/%/variables/%/%/ws'] = array(
@@ -131,12 +131,12 @@ function obiba_mica_dataset_menu() {
     'page arguments' => array(2, 3),
   );
 
-  $items['mica/variables-tab-header/%'] = array(
+  $items['mica/variables-tab-header/%/%'] = array(
     'title' => 'Dataset',
     'page callback' => 'obiba_mica_dataset_Variables_table_ajax_header',
     'file' => 'obiba_mica_dataset-page-detail.inc',
     'access callback' => TRUE,
-    'page arguments' => array(2),
+    'page arguments' => array(2, 3),
   );
 
   $items['mica/variables-harmonization-algo/%/%'] = array(

@@ -22,13 +22,13 @@
 
   function createDataTable() {
     var divDataTableVar = $('#variables-table');
-    var idDataset = divDataTableVar.attr('id-dataset');
     var typeDataset = divDataTableVar.attr('type-dataset');
+    var idDataset =Drupal.settings.datasetId;
     var headerTable = null;
 
     $.ajax({
       'async': false,
-      'url': Drupal.settings.basePath + Drupal.settings.pathPrefix + 'mica/variables-tab-header/' + typeDataset,
+      'url': Drupal.settings.basePath + Drupal.settings.pathPrefix + 'mica/variables-tab-header/' + typeDataset + '/' + idDataset,
       'type': 'GET',
       'success': function (data) {
         setHeaderTab(data);

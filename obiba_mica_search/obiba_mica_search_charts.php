@@ -171,21 +171,21 @@ function obiba_mica_search_query_charts($query, Callable $bucket_filter = NULL, 
       $data = array();
       $links =array();
       $link = array();
-      if (empty($allowed_taxonomies) || in_array($taxonomy_coverage->taxonomy->name, $allowed_taxonomies)) {
-        $value = array();
+      if (empty($allowed_taxonomies) || (!empty($allowed_taxonomies) && in_array($taxonomy_coverage->taxonomy->name, $allowed_taxonomies))) {
         foreach ($taxonomy_coverage->vocabularies as $key_vocabulary => $vocabulary_coverage) {
           if (!empty($vocabulary_coverage->count)) {
             $labels[$key_vocabulary] = obiba_mica_commons_get_localized_field($vocabulary_coverage->vocabulary, 'titles');
-            if (!empty($vocabulary_coverage->buckets)) {
-              $terms=array();
-              foreach ($vocabulary_coverage->terms as $key_term => $term) {
-                array_push($terms, $term->term->name);
+
+            $terms = array();
+            foreach ($vocabulary_coverage->terms as $key_term => $term) {
+              array_push($terms, $term->term->name);
+              if (!empty($vocabulary_coverage->buckets)) {
                 foreach ($term->buckets as $key_bucket => $bucket) {
-                  if (!empty($value[$bucket->value])) {
-                    $value[$bucket->value][$key_vocabulary] += $bucket->hits;
+                  if (!empty($data[$bucket->value])) {
+                    $data[$bucket->value][$key_vocabulary] += $bucket->hits;
                   }
                   else {
-                    $value[$bucket->value][$key_vocabulary] = $bucket->hits;
+                    $data[$bucket->value][$key_vocabulary] = $bucket->hits;
                   }
 
                   $link[$bucket->value][$key_vocabulary] = MicaClient::chartQueryBuilders(
@@ -197,7 +197,18 @@ function obiba_mica_search_query_charts($query, Callable $bucket_filter = NULL, 
                   );
                 }
               }
-              $data = $value;
+            }
+            if (empty($vocabulary_coverage->buckets)) {
+              $data[t('Variables')][] = $vocabulary_coverage->count;
+              if (!empty($terms)) {
+                $link[t('Variables')][] = MicaClient::chartQueryBuilders(
+                  $query,
+                  NULL,
+                  $taxonomy_coverage->taxonomy->name,
+                  $vocabulary_coverage->vocabulary->name,
+                  $terms
+                );
+              }
             }
           }
 
