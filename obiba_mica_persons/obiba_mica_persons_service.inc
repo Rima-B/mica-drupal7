@@ -7,11 +7,19 @@
 /**
  * Get the person list by studies id (id1+id2+id3...).
  *
- * @param string $studies_id
+ * @param string $entity_id
+ * @param string $entity_query
  */
-function obiba_mica_persons_list($studies_id) {
+function obiba_mica_persons_list($entities_id) {
+  $entities_id = json_decode($entities_id);
+  $query_person = empty($entities_id->studiesId) ? '' : "studyMemberships.parentId:(" . implode('+', $entities_id->studiesId) . ")";
+  if (!empty($entities_id->networksId)) {
+    if (!empty($query_person)) {
+      $query_person .= '+OR+';
+    }
+    $query_person .= "networkMemberships.parentId:(" . implode('+', $entities_id->networksId) . ")";
+  }
   $persons_resources = new MicaPersonsResource();
-  $query_person = "studyMemberships.parentId:($studies_id)";
   $persons = $persons_resources->search($query_person);
   drupal_json_output(array(
     "recordsTotal" => $persons->total,
@@ -24,9 +32,16 @@ function obiba_mica_persons_list($studies_id) {
  *
  * @param string $studies_id
  */
-function obiba_mica_persons_list_csv_download($studies_id) {
+function obiba_mica_persons_list_csv_download($entities_id) {
+  $entities_id = json_decode($entities_id);
+  $query_person = empty($entities_id->studiesId) ? '' : "studyMemberships.parentId:(" . implode('+', $entities_id->studiesId) . ")";
+  if (!empty($entities_id->networksId)) {
+    if (!empty($query_person)) {
+      $query_person .= '+OR+';
+    }
+    $query_person .= "networkMemberships.parentId:(" . implode('+', $entities_id->networksId) . ")";
+  }
   $persons_resources = new MicaPersonsResource();
-  $query_person = "studyMemberships.parentId:($studies_id)";
   $response = $persons_resources->download($query_person);
   if (!empty($response)) {
     $headers = $persons_resources->getLastResponseHeaders();

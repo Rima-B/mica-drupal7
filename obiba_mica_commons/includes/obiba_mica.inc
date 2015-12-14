@@ -200,30 +200,25 @@ class MicaClient {
     else {
       watchdog('obiba_mica', 'Auth by anonymous credentials');
       $current_anonymous_pass = variable_get_value('mica_anonymous_password');
-      if ($current_anonymous_pass == variable_get_value('mica_anonymous_password_saved')) {
+      $saved_anonymous_pass = variable_get_value('mica_anonymous_password_saved');
 
+      // always append credentials in case of mica session has expired
+      $credentials = variable_get_value('mica_anonymous_name') . ':' . $current_anonymous_pass;
+      $headers[self::AUTHORIZATION_HEADER] = array(
+        'Basic '
+        . base64_encode($credentials),
+      );
+
+      // detect if anonymous password was changed
+      if ($current_anonymous_pass == $saved_anonymous_pass) {
         if (isset($_SESSION[self::MICA_COOKIE])) {
           $headers = $this->addCookieHeader($headers, NULL,
             $_SESSION[self::MICA_COOKIE]);
         }
-
-        $credentials = variable_get_value('mica_anonymous_name') . ':'
-          . variable_get_value('mica_anonymous_password');
-        $headers[self::AUTHORIZATION_HEADER] = array(
-          'Basic '
-          . base64_encode($credentials),
-        );
       }
       else {
-        $credentials = variable_get_value('mica_anonymous_name') . ':'
-          . variable_get_value('mica_anonymous_password');
-        $headers[self::AUTHORIZATION_HEADER] = array(
-          'Basic '
-          . base64_encode($credentials),
-        );
         session_unset();
-        variable_set_value('mica_anonymous_name_saved', variable_get_value('mica_anonymous_name'));
-
+        variable_set_value('mica_anonymous_password_saved', variable_get_value('mica_anonymous_password'));
       }
     }
     return $headers;

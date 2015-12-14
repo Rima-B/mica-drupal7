@@ -19,6 +19,10 @@ function obiba_mica_network_page_detail($network_id) {
 
   if (!empty($network_dto)) {
 
+    if (!empty($network_dto->networkSummaries)) {
+      obiba_mica_network_networks_datatable_init($network_dto->networkSummaries);
+    }
+
     if (!empty($network_dto->studySummaries)) {
       obiba_mica_network_studies_datatable_init($network_dto->studySummaries);
     }
@@ -31,17 +35,34 @@ function obiba_mica_network_page_detail($network_id) {
       l(t('Home'), '<front>'),
       l(t('Networks'), MicaClientPathProvider::NETWORKS),
     ));
-    if (module_exists('obiba_mica_persons') && !empty($network_dto->studyIds)) {
-      obiba_mica_persons_datatable_init($network_dto->studyIds);
+    $studies_network_ids = array();
+    if (module_exists('obiba_mica_persons') && (!empty($network_dto->studyIds) || !empty($network_dto->networkIds))) {
+      if (!empty($network_dto->studyIds)) {
+        $studies_network_ids = $network_dto->studyIds;
+      }
+      if ($network_dto->networkSummaries) {
+        foreach ($network_dto->networkSummaries as $network_summary) {
+          if (!empty($network_summary->studyIds)) {
+            $studies_network_ids = array_merge($studies_network_ids, $network_summary->studyIds);
+          }
+        }
+      }
+      $entities_id = array(
+        'studiesId' => !empty($studies_network_ids) ? $studies_network_ids : NULL,
+        'networksId' => !empty($network_dto->networkIds) ? $network_dto->networkIds : NULL
+      );
+      obiba_mica_persons_datatable_init($entities_id);
+
       $associated_people_button = theme('obiba_mica_persons-button');
       $associated_people_modal = theme('obiba_mica_persons-modal',
         array('persons_table' => theme('obiba_mica_persons-table')));
-      $investigator_detail_modal =
-        obiba_mica_persons_get_person_detail('investigator', $network_dto->id,
-          $network_dto->investigators);
-      $contact_detail_modal = obiba_mica_persons_get_person_detail('contact',
-        $network_dto->id, $network_dto->contacts);
     }
+
+    $investigator_detail_modal =
+      obiba_mica_persons_get_person_detail('investigator', $network_dto->id,
+        $network_dto->investigators);
+    $contact_detail_modal = obiba_mica_persons_get_person_detail('contact',
+      $network_dto->id, $network_dto->contacts);
 
     if (module_exists('obiba_mica_files')) {
       drupal_add_js(drupal_get_path('module', 'obiba_mica_files') .
@@ -49,18 +70,21 @@ function obiba_mica_network_page_detail($network_id) {
       $flat_network_attachments =
         obiba_mica_files_get_flat_attachments('network', $network_id);
       $filtered_tree_path =
-        $flat_network_attachments->findNodeFullPath('/network/'.$network_id);
+        $flat_network_attachments->findNodeFullPath('/network/' . $network_id);
       if (!empty($filtered_tree_path)) {
         $themed_attachment =
           $flat_network_attachments->themeFolders($filtered_tree_path,
-            NULL,$network_id);
+            NULL, $network_id);
       }
     }
 
     obiba_mica_network_load_charts_libs();
     drupal_add_js(drupal_get_path('module', 'obiba_mica_network') .
       '/js/mica-network-detail.js', 'file');
-    drupal_add_js(array('network_url' => rawurlencode($network_id), 'study_ids' => $network_dto->studyIds), 'setting');
+    drupal_add_js(array(
+      'network_url' => rawurlencode($network_id),
+      'study_ids' => $network_dto->studyIds
+    ), 'setting');
 
     return theme('obiba_mica_network-detail', array(
       'investigators_modal' => !empty($investigator_detail_modal) ?
@@ -84,12 +108,14 @@ function obiba_mica_network_page_detail($network_id) {
   }
 }
 
-function obiba_mica_network_page_detail_coverage($network_id, $study_ids) {
+function obiba_mica_network_page_detail_coverage($network_id, $study_ids_string) {
+  $study_ids = json_decode($study_ids_string);
+
   if (empty($study_ids)) {
     exit;
   }
 
-  $coverage = obiba_mica_network_coverage(json_decode($study_ids));
+  $coverage = obiba_mica_network_coverage($study_ids);
 
   if (empty($coverage)) {
     exit;
@@ -101,7 +127,44 @@ function obiba_mica_network_page_detail_coverage($network_id, $study_ids) {
 /**
  * @param $network_dto
  */
-function obiba_mica_network_studies_datatable_init($studySummaries) {
+function obiba_mica_network_networks_datatable_init($network_summaries) {
+  if (drupal_get_library('obiba_mica_dataset', 'datatables')) {
+    drupal_add_library('obiba_mica_dataset', 'datatables');
+  }
+  else {
+    obiba_mica_commons_datatables_external_source();
+  }
+
+  drupal_add_js(drupal_get_path('module', 'obiba_mica_network') . '/js/obiba_mica_network_networks_datatable_init.js', 'file');
+
+  drupal_add_js(array(
+    'table_network_networks_headers' => array(
+      array("title" => t('Acronym')),
+      array("title" => t('Name'), 'width' => '90%')
+    ),
+    'table_network_networks_data' => obiba_mica_network_links_table_rows($network_summaries)
+  ), 'setting');
+}
+
+function obiba_mica_network_links_table_rows($network_summaries) {
+  $rows = array();
+
+  if (!empty($network_summaries)) {
+    foreach ($network_summaries as $network_summary) {
+      $rows[] = array(
+        obiba_mica_commons_get_localized_field($network_summary, 'acronym'),
+        $network_summary->getPublished() ? MicaClientAnchorHelper::network($network_summary) : t(obiba_mica_commons_get_localized_field($network_summary, 'name'))
+      );
+    }
+  }
+
+  return $rows;
+}
+
+/**
+ * @param $network_dto
+ */
+function obiba_mica_network_studies_datatable_init($study_summaries) {
   if (drupal_get_library('obiba_mica_dataset', 'datatables')) {
     drupal_add_library('obiba_mica_dataset', 'datatables');
   }
@@ -112,7 +175,7 @@ function obiba_mica_network_studies_datatable_init($studySummaries) {
   drupal_add_js(drupal_get_path('module', 'obiba_mica_network') . '/js/obiba_mica_network_studies_datatable_init.js', 'file');
   drupal_add_js(array(
     'table_headers' => obiba_mica_network_study_table_headers(),
-    'table_data' => obiba_mica_network_study_table_rows($studySummaries)
+    'table_data' => obiba_mica_network_study_table_rows($study_summaries)
   ), 'setting');
 }
 
@@ -131,9 +194,9 @@ function obiba_mica_network_study_table_rows($study_summaries) {
         empty($study_summary->variables)
           ? '-' : MicaClientAnchorHelper::studyVariables(obiba_mica_commons_format_number($study_summary->variables), $study_summary->id)
       );
-
     }
   }
+
   return $rows;
 }
 

@@ -70,7 +70,7 @@ function obiba_mica_persons_theme($existing, $type, $theme, $path) {
 /**
  * Initialize the associated persons dataTables.
  */
-function obiba_mica_persons_datatable_init($studies_id) {
+function obiba_mica_persons_datatable_init($entities_id) {
   global $language;
   $current_lang = $language->language;
   $download_button = theme('obiba_mica_persons-download-csv-button');
@@ -78,10 +78,10 @@ function obiba_mica_persons_datatable_init($studies_id) {
     array('type' => 'file', 'weight' => 99));
   drupal_add_js(array(
     'resourcePathPersons' => MicaClientPersonsPathProvider::PERSONS,
-    'table_header' => obiba_mica_persons_table_headers(),
-    'studies_id' => implode(' ', $studies_id),
+    'headerTable' => obiba_mica_persons_table_headers(),
+    'entitiesId' => $entities_id,
     'current_lang' => $current_lang,
-    'download_button' =>$download_button,
+    'download_button' => $download_button,
   ), 'setting');
 }
 
@@ -92,7 +92,8 @@ function obiba_mica_persons_table_headers() {
   return array(
     array("title" => t('Name'), 'data' => 'firstName'),
     array("title" => t('Email'), 'data' => 'email'),
-    array("title" => t('Studies'), 'data' => 'studyMemberships[, ].parentId'),
+    array("title" => t('Studies'), 'data' => 'studyMemberships'),
+    array("title" => t('Networks'), 'data' => 'networkMemberships'),
   );
 }
 

@@ -345,7 +345,7 @@ function obiba_mica_drush_download_js_dependencies()
   }
 
   $repository_name = 'mica-drupal-js-libraries';
-  $dependencies_url = 'https://github.com/obiba/'. $repository_name .'/archive/1.0.0.tar.gz';
+  $dependencies_url = 'https://github.com/obiba/'. $repository_name .'/archive/1.0.1.tar.gz';
 
   if (!drush_shell_exec("rm -rf $path/*")) {
     drush_log(dt("Failed to empty $path content."), 'error');

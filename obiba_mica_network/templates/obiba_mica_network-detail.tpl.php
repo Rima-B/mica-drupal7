@@ -22,15 +22,16 @@
     <div class="btn-group pull-right md-bottom-margin">
       <?php if (variable_get_value('mica_statistics_coverage')): ?>
         <button type="button"
-          class="btn btn-primary dropdown-toggle <?php print $has_variables ? '' : 'hidden'; ?>"
-          data-toggle="dropdown" aria-expanded="false">
+                class="btn btn-primary dropdown-toggle <?php print $has_variables ? '' : 'hidden'; ?>"
+                data-toggle="dropdown" aria-expanded="false">
           <?php print t('Search') ?> <span class="caret"></span>
         </button>
         <ul class="dropdown-menu" role="menu">
           <li><?php print MicaClientAnchorHelper::coverageNetwork($network_dto->id) ?></li>
           <li><?php print MicaClientAnchorHelper::networkVariables(NULL, $network_dto->id) ?></li>
         </ul>
-      <?php else:
+      <?php
+      else:
         print MicaClientAnchorHelper::networkVariables(NULL, $network_dto->id, array('class' => 'btn btn-primary indent'));
         ?>
       <?php endif; ?>
@@ -81,7 +82,7 @@
                   <?php foreach ($network_dto->investigators as $key_investigator => $investigator) : ?>
                     <li>
                       <a href="#" data-toggle="modal"
-                        data-target="#investigator_<?php print $network_dto->id ?>_<?php print $key_investigator ?>">
+                         data-target="#investigator_<?php print $network_dto->id ?>_<?php print $key_investigator ?>">
                         <?php print $investigator->title; ?>
                         <?php print $investigator->firstName; ?>
                         <?php print $investigator->lastName; ?>
@@ -106,7 +107,7 @@
                   <?php foreach ($network_dto->contacts as $key_contact => $contact) : ?>
                     <li>
                       <a href="#" data-toggle="modal"
-                        data-target="#contact_<?php print $network_dto->id ?>_<?php print $key_contact ?>">
+                         data-target="#contact_<?php print $network_dto->id ?>_<?php print $key_contact ?>">
                         <?php print $contact->title; ?>
                         <?php print $contact->firstName; ?>
                         <?php print $contact->lastName; ?>
@@ -144,22 +145,45 @@
 
   </section>
   <?php if (!empty($attachments)): ?>
-  <section>
-    <h2><?php print variable_get_value('files_documents_label'); ?></h2>
-    <?php print $attachments; ?>
-  </section>
-  <?php endif; ?>
-  <!-- STUDIES -->
-  <?php if (!empty($network_dto->studySummaries)): ?>
     <section>
-      <h2><?php print t('Studies') ?></h2>
+      <h2><?php print variable_get_value('files_documents_label'); ?></h2>
+      <?php print $attachments; ?>
+    </section>
+  <?php endif; ?>
 
-      <div id="studies-table">
-        <div class="row">
-          <div class="col-lg-12 col-xs-12">
-            <table class="table table-striped" id="table-studies"></table>
+  <!-- STUDIES and NETWORKS -->
+  <?php if (!empty($network_dto->studySummaries) || !empty($network_dto->networkSummaries)): ?>
+    <section>
+
+      <div class="row">
+        <?php if (!empty($network_dto->studySummaries)): ?>
+          <div class="<?php echo(empty($network_dto->networkSummaries) ? 'col-lg-12' : 'col-lg-6') ?> col-xs-12">
+            <h2><?php print t('Studies') ?></h2>
+
+            <div id="studies-table">
+              <div class="row">
+                <div class="col-lg-12 col-xs-12">
+                  <table class="table table-striped" id="table-studies"></table>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
+        <?php endif; ?>
+
+        <?php if (!empty($network_dto->networkSummaries)): ?>
+          <div class="<?php echo(empty($network_dto->studySummaries) ? 'col-lg-12' : 'col-lg-6') ?> col-xs-12">
+            <h2><?php print t('Networks') ?></h2>
+
+            <div id="networks-table">
+              <div class="row">
+                <div class="col-lg-12 col-xs-12">
+                  <table class="table table-striped" id="table-networks"></table>
+                </div>
+              </div>
+            </div>
+          </div>
+        <?php endif; ?>
+
       </div>
 
     </section>
