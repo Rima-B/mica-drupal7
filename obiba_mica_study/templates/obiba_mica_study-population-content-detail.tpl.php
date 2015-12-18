@@ -97,7 +97,7 @@
           <td>
             <?php !empty($population->selectionCriteria->ageMin) ? print t('Minimum') . ' '
               .$population->selectionCriteria->ageMin
-              . (!empty(!empty($population->selectionCriteria->ageMax))? ', ':'' ): NULL; ?>
+              . ((!empty($population->selectionCriteria->ageMax))? ', ':'' ): NULL;?>
             <?php !empty($population->selectionCriteria->ageMax) ? print t('Maximum') . ' '
               . $population->selectionCriteria->ageMax : NULL; ?>
           </td>

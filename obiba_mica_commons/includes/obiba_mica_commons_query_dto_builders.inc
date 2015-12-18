@@ -1043,7 +1043,11 @@ class JoinQueryDtoBuilder extends AbstractDtoBuilder {
    *   LogicalFilterQueryDtoBuilder instance.
    */
   private function getLogicalFilterBuilder($type) {
-    $builder = $this->builderMap[$type];
+    $builder = NULL;
+
+    if (array_key_exists($type, $this->builderMap)) {
+      $builder = $this->builderMap[$type];
+    }
 
     if (empty($builder)) {
       $builder = LogicalFilterQueryDtoBuilder::newBuilder();
