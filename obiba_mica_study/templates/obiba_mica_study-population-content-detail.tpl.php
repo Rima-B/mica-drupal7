@@ -8,60 +8,6 @@
   </p>
 <?php endif; ?>
 
-<?php if (!empty($population->numberOfParticipants->participant->number)
-  || !empty($population->numberOfParticipants->sample->number)
-  || !empty($population->info)
-): ?>
-  <h4><?php print t('Sample Size') ?></h4>
-
-  <div class="scroll-content-tab">
-    <table class="table table-striped">
-      <tbody>
-
-      <?php if (!empty($population->numberOfParticipants->participant->number)): ?>
-        <tr>
-          <th><?php print t('Number of participants') ?></th>
-          <td>
-            <p>
-              <?php print obiba_mica_commons_format_number($population->numberOfParticipants->participant->number) ?>
-              <?php if (!empty($population->numberOfParticipants->participant->noLimit)): ?>
-                (<?php print t('No limit'); ?>)
-              <?php endif; ?>
-              <?php if (!empty($population->numberOfParticipants->info)): ?>
-
-            <p><?php print obiba_mica_commons_get_localized_field($population->numberOfParticipants, 'info'); ?></p>
-            <?php endif; ?>
-            </p>
-          </td>
-        </tr>
-      <?php endif; ?>
-
-      <?php if (!empty($population->numberOfParticipants->sample->number)): ?>
-        <tr>
-          <th><?php print t('Number of participants with biological samples') ?></th>
-          <td>
-            <p>
-              <?php print obiba_mica_commons_format_number($population->numberOfParticipants->sample->number) ?>
-              <?php if (!empty($population->numberOfParticipants->sample->noLimit)): ?>
-                (<?php print t('No limit'); ?>)
-              <?php endif; ?>
-            </p>
-          </td>
-        </tr>
-      <?php endif; ?>
-
-      <?php if (!empty($population->info)): ?>
-        <tr>
-          <th><?php print t('Supplementary information') ?></th>
-          <td><p> <?php print obiba_mica_commons_get_localized_field($population, 'info'); ?></p></td>
-        </tr>
-      <?php endif; ?>
-
-      </tbody>
-    </table>
-  </div>
-<?php endif; ?>
-
 <?php if (!empty($population->recruitment->generalPopulationSources)
   || !empty($population->recruitment->studies)
   || !empty($population->recruitment->specificPopulationSources)
@@ -150,7 +96,8 @@
           <th><?php print t('Age') ?></th>
           <td>
             <?php !empty($population->selectionCriteria->ageMin) ? print t('Minimum') . ' '
-              . $population->selectionCriteria->ageMin . ', ' : NULL; ?>
+              .$population->selectionCriteria->ageMin
+              . (!empty(!empty($population->selectionCriteria->ageMax))? ', ':'' ): NULL; ?>
             <?php !empty($population->selectionCriteria->ageMax) ? print t('Maximum') . ' '
               . $population->selectionCriteria->ageMax : NULL; ?>
           </td>
@@ -209,6 +156,60 @@
           <td><?php print obiba_mica_commons_get_localized_field($population->selectionCriteria, 'info'); ?></td>
         </tr>
       <?php endif; ?>
+      </tbody>
+    </table>
+  </div>
+<?php endif; ?>
+
+<?php if (!empty($population->numberOfParticipants->participant->number)
+  || !empty($population->numberOfParticipants->sample->number)
+  || !empty($population->info)
+): ?>
+  <h4><?php print t('Sample Size') ?></h4>
+
+  <div class="scroll-content-tab">
+    <table class="table table-striped">
+      <tbody>
+
+      <?php if (!empty($population->numberOfParticipants->participant->number)): ?>
+        <tr>
+          <th><?php print t('Number of participants') ?></th>
+          <td>
+            <p>
+              <?php print obiba_mica_commons_format_number($population->numberOfParticipants->participant->number) ?>
+              <?php if (!empty($population->numberOfParticipants->participant->noLimit)): ?>
+                (<?php print t('No limit'); ?>)
+              <?php endif; ?>
+              <?php if (!empty($population->numberOfParticipants->info)): ?>
+
+            <p><?php print obiba_mica_commons_get_localized_field($population->numberOfParticipants, 'info'); ?></p>
+            <?php endif; ?>
+            </p>
+          </td>
+        </tr>
+      <?php endif; ?>
+
+      <?php if (!empty($population->numberOfParticipants->sample->number)): ?>
+        <tr>
+          <th><?php print t('Number of participants with biological samples') ?></th>
+          <td>
+            <p>
+              <?php print obiba_mica_commons_format_number($population->numberOfParticipants->sample->number) ?>
+              <?php if (!empty($population->numberOfParticipants->sample->noLimit)): ?>
+                (<?php print t('No limit'); ?>)
+              <?php endif; ?>
+            </p>
+          </td>
+        </tr>
+      <?php endif; ?>
+
+      <?php if (!empty($population->info)): ?>
+        <tr>
+          <th><?php print t('Supplementary information') ?></th>
+          <td><p> <?php print obiba_mica_commons_get_localized_field($population, 'info'); ?></p></td>
+        </tr>
+      <?php endif; ?>
+
       </tbody>
     </table>
   </div>

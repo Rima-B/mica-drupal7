@@ -977,10 +977,7 @@ class JoinQueryDtoBuilder extends AbstractDtoBuilder {
         }
       }
 
-      if (!empty($logical_filter_builder) && $logical_filter_builder->hasFields()) {
-        $this->builderMap[$type] = $logical_filter_builder;
-        $logical_filter_builder = NULL;
-      }
+      $this->removeEmptyLogicalFilterBuilder($type);
     }
   }
 
@@ -1046,8 +1043,28 @@ class JoinQueryDtoBuilder extends AbstractDtoBuilder {
    *   LogicalFilterQueryDtoBuilder instance.
    */
   private function getLogicalFilterBuilder($type) {
-    return array_key_exists($type, $this->builderMap) ?
-      $this->builderMap[$type] : LogicalFilterQueryDtoBuilder::newBuilder();
+    $builder = $this->builderMap[$type];
+
+    if (empty($builder)) {
+      $builder = LogicalFilterQueryDtoBuilder::newBuilder();
+      $this->builderMap[$type] = $builder;
+    }
+
+    return $builder;
+  }
+
+  /**
+   * Removes the builder that has no fields from the builders map.
+   *
+   * @param $type string
+   *   The query type.
+   */
+  private function removeEmptyLogicalFilterBuilder($type) {
+    $builder = $this->builderMap[$type];
+
+    if (!empty($builder) && !$builder->hasFields()) {
+      unset($this->builderMap[$type]);
+    }
   }
 
   /**
